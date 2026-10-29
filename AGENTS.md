@@ -53,6 +53,9 @@ Use pnpm, not npm or yarn. Run these from the repo root.
 - `pnpm format:check`: fail if any file is not formatted
 - `pnpm preview`: serve the client's production build
 
+A husky pre-commit hook runs lint-staged, which formats and lints the
+staged files, then runs `pnpm typecheck`.
+
 A change is done when `pnpm lint`, `pnpm format:check` and `pnpm build`
 pass, along with the tests once a test runner exists. Test multi-participant behavior in 2 or more
 browser windows.
