@@ -55,6 +55,9 @@ A pnpm workspace. ESLint, Prettier and TypeScript live at the root.
     components stay presentational.
   - Tests sit next to the file they test, such as `chat-state.test.ts`,
     and run with Vitest.
+  - `e2e/`: Playwright tests that open several participants in Chromium
+    against their own signaling server and client. Add a scenario with
+    each user-facing feature.
 - `server/`: the WebSocket signaling server. Node runs its TypeScript
   directly, with no build step.
   - `src/`: one folder per module, with its tests next to it, such as
@@ -79,6 +82,10 @@ Use pnpm, not npm or yarn. Run these from the repo root.
 - `pnpm typecheck`: type-check every package
 - `pnpm build`: type-check, then build the client
 - `pnpm test`: run every package's tests
+- `pnpm test:e2e`: run the end-to-end tests. The first run needs
+  `pnpm --filter @ulak/client exec playwright install chromium`.
+- `pnpm test:e2e:ui`: open Playwright's UI mode to watch and step through
+  the end-to-end tests
 - `pnpm lint`: run ESLint over the whole repo
 - `pnpm format`: format the whole repo with Prettier
 - `pnpm format:check`: fail if any file is not formatted
@@ -87,6 +94,6 @@ Use pnpm, not npm or yarn. Run these from the repo root.
 A husky pre-commit hook runs lint-staged, which formats and lints the
 staged files, then runs `pnpm typecheck`.
 
-A change is done when `pnpm lint`, `pnpm format:check`, `pnpm build` and
-`pnpm test` pass. Test multi-participant behavior in 2 or more browser
-windows.
+A change is done when `pnpm lint`, `pnpm format:check`, `pnpm build`,
+`pnpm test` and `pnpm test:e2e` pass. Test multi-participant behavior in
+2 or more browser windows.

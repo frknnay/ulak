@@ -7,8 +7,9 @@ import { createConnections } from './connections'
 import { loadIdentity } from './identity'
 
 // The signaling server runs next to the client on port 8080. Using the
-// page's host lets other devices on the LAN join.
-const signalingUrl = `ws://${location.hostname}:8080`
+// page's host lets other devices on the LAN join. The end-to-end tests
+// set VITE_SIGNALING_URL to run their own server.
+const signalingUrl = import.meta.env.VITE_SIGNALING_URL ?? `ws://${location.hostname}:8080`
 
 // Holds the one chat state and transport for the whole app, and connects
 // the two: events from peers go to the reducer, and messages that this

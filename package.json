@@ -8,6 +8,8 @@
     "typecheck": "pnpm -r typecheck",
     "build": "pnpm typecheck && pnpm --filter @ulak/client build",
     "test": "pnpm -r test",
+    "test:e2e": "pnpm --filter @ulak/client test:e2e",
+    "test:e2e:ui": "pnpm --filter @ulak/client test:e2e:ui",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
