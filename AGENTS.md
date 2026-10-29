@@ -7,8 +7,14 @@ assignment for a web frontend role.
 
 - Keep it simple. A small, well-structured solution beats a feature-rich
   one. Ask before adding a bonus feature or a new dependency.
-- Commit often, one meaningful change per commit. Read
+- Do only the step the user asked for. When asked to discuss, review or
+  propose, do not change files.
+- The user makes the architectural decisions. If a task needs one this file
+  does not cover, lay out the options and trade-offs and ask.
+- Commit only when the user asks, one meaningful change per commit. Read
   `.agents/skills/commit/SKILL.md` before every commit.
+- Never write the name of the company that set this assignment anywhere in
+  the repo: code, filenames, metadata, docs or commit messages.
 
 ## Architecture
 
@@ -40,6 +46,8 @@ A pnpm workspace. ESLint, Prettier and TypeScript live at the root.
 - Style components with CSS modules: put `Component.module.css` next to
   `Component.tsx`. Global CSS is only for resets and shared custom
   properties such as colors and spacing.
+- Tests check behavior, not implementation details. Never weaken a test to
+  make it pass; report the failure and its cause.
 
 ## Commands
 
