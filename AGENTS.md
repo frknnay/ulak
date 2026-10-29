@@ -29,14 +29,21 @@ any protocol change.
 
 The UI follows the mockup in `design/mockup.png`.
 
+## Layout
+
+A pnpm workspace. ESLint and TypeScript live at the root.
+
+- `client/`: the React app, built with Vite.
+
 ## Commands
 
-Use pnpm, not npm or yarn.
+Use pnpm, not npm or yarn. Run these from the repo root.
 
-- `pnpm dev`: start the Vite dev server
-- `pnpm build`: type-check with `tsc -b`, then build
-- `pnpm lint`: run ESLint
-- `pnpm preview`: serve the production build
+- `pnpm dev`: start every package's dev server
+- `pnpm typecheck`: type-check every package
+- `pnpm build`: type-check, then build the client
+- `pnpm lint`: run ESLint over the whole repo
+- `pnpm preview`: serve the client's production build
 
 A change is done when `pnpm lint` and `pnpm build` pass, along with the tests
 once a test runner exists. Test multi-participant behavior in 2 or more
