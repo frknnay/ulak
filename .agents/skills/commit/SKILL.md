@@ -46,7 +46,7 @@ Every sentence must parse on the first read:
 
 1. Arguments are guidance; paths or globs limit what is committed.
 2. Check `git status`, `git diff` and `git diff --cached`. Unstage unrelated changes. Ask if a file's inclusion is unclear.
-3. Run `pnpm lint` and `pnpm build`, plus the tests once they exist. Don't commit if any of them fail.
+3. Run `pnpm lint`, `pnpm format:check` and `pnpm build`, plus the tests once they exist. Don't commit if any of them fail.
 4. Stage by path, never `git add -A`/`.`. Commit `pnpm-lock.yaml` with any `package.json` dependency change.
 5. Commit via stdin:
 

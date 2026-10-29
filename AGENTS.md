@@ -31,7 +31,7 @@ The UI follows the mockup in `design/mockup.png`.
 
 ## Layout
 
-A pnpm workspace. ESLint and TypeScript live at the root.
+A pnpm workspace. ESLint, Prettier and TypeScript live at the root.
 
 - `client/`: the React app, built with Vite.
 
@@ -43,8 +43,10 @@ Use pnpm, not npm or yarn. Run these from the repo root.
 - `pnpm typecheck`: type-check every package
 - `pnpm build`: type-check, then build the client
 - `pnpm lint`: run ESLint over the whole repo
+- `pnpm format`: format the whole repo with Prettier
+- `pnpm format:check`: fail if any file is not formatted
 - `pnpm preview`: serve the client's production build
 
-A change is done when `pnpm lint` and `pnpm build` pass, along with the tests
-once a test runner exists. Test multi-participant behavior in 2 or more
+A change is done when `pnpm lint`, `pnpm format:check` and `pnpm build`
+pass, along with the tests once a test runner exists. Test multi-participant behavior in 2 or more
 browser windows.
