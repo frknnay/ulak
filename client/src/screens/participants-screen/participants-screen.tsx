@@ -1,18 +1,13 @@
+import { useChat } from '../../chat/chat-context'
 import styles from './participants-screen.module.css'
 
-type Participant = {
-  id: string
-  name: string
-}
+export function ParticipantsScreen() {
+  const { participants } = useChat()
+  const sorted = participants.toSorted((a, b) => a.name.localeCompare(b.name))
 
-type ParticipantsScreenProps = {
-  participants: Participant[]
-}
-
-export function ParticipantsScreen({ participants }: ParticipantsScreenProps) {
   return (
     <ul className={styles.list}>
-      {participants.map((participant) => (
+      {sorted.map((participant) => (
         <li key={participant.id} className={styles.participant}>
           {participant.name}
         </li>

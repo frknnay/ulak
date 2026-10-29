@@ -50,6 +50,9 @@ A pnpm workspace. ESLint, Prettier and TypeScript live at the root.
     chat state.
   - `src/transport/transport.ts`: the WebRTC mesh that sends and receives
     chat events, using the signaling server to connect peers.
+  - `src/chat/`: `ChatProvider` holds the one chat state and transport.
+    Screens read the chat and send messages with `useChat()`, and
+    components stay presentational.
   - Tests sit next to the file they test, such as `chat-state.test.ts`,
     and run with Vitest.
 - `server/`: the WebSocket signaling server. Node runs its TypeScript

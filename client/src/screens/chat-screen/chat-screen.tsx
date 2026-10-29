@@ -1,36 +1,41 @@
 import { useState, type FormEvent, type KeyboardEvent } from 'react'
 import { SendHorizontal } from 'lucide-react'
+import { useChat } from '../../chat/chat-context'
 import { IconButton } from '../../components/icon-button/icon-button'
 import { Message } from '../../components/message/message'
 import { Notice } from '../../components/notice/notice'
 import styles from './chat-screen.module.css'
 
-// What the chat log shows: a participant's message, or a notice such as
-// "Marcus joined".
-export type ChatEntry =
-  | { kind: 'message'; id: string; author: string; time: string; text: string }
-  | { kind: 'notice'; id: string; time: string; text: string }
+// Times as in the mockup, such as 09:21.
+const timeFormat = new Intl.DateTimeFormat(undefined, {
+  hour: '2-digit',
+  minute: '2-digit',
+  hourCycle: 'h23',
+})
 
-type ChatScreenProps = {
-  entries: ChatEntry[]
-  onSend: (text: string) => void
-}
+export function ChatScreen() {
+  const { log, send } = useChat()
 
-export function ChatScreen({ entries, onSend }: ChatScreenProps) {
   return (
     <>
       <ol className={styles.log}>
-        {entries.map((entry) => (
-          <li key={entry.id} className={styles.entry}>
-            {entry.kind === 'message' ? (
-              <Message author={entry.author} time={entry.time} text={entry.text} />
-            ) : (
-              <Notice time={entry.time} text={entry.text} />
-            )}
-          </li>
-        ))}
+        {log.map((entry) =>
+          entry.kind === 'message' ? (
+            <li key={entry.message.id} className={styles.entry}>
+              <Message
+                author={entry.message.authorName}
+                time={timeFormat.format(entry.message.sentAt)}
+                text={entry.message.text}
+              />
+            </li>
+          ) : (
+            <li key={entry.notice.id} className={styles.entry}>
+              <Notice time={timeFormat.format(entry.notice.at)} text={entry.notice.text} />
+            </li>
+          ),
+        )}
       </ol>
-      <Composer onSend={onSend} />
+      <Composer onSend={send} />
     </>
   )
 }
