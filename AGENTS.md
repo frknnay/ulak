@@ -35,6 +35,12 @@ A pnpm workspace. ESLint, Prettier and TypeScript live at the root.
 
 - `client/`: the React app, built with Vite.
 
+## Conventions
+
+- Style components with CSS modules: put `Component.module.css` next to
+  `Component.tsx`. Global CSS is only for resets and shared custom
+  properties such as colors and spacing.
+
 ## Commands
 
 Use pnpm, not npm or yarn. Run these from the repo root.
