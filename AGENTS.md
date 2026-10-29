@@ -44,6 +44,12 @@ A pnpm workspace. ESLint, Prettier and TypeScript live at the root.
     its own folder, such as `icon-button/icon-button.tsx`.
   - `src/screens/`: the screens from the mockup, each in its own folder,
     such as `chat-screen/chat-screen.tsx`.
+  - `src/protocol/protocol.ts`: the peer-to-peer chat events and their
+    parser.
+  - `src/chat-state/chat-state.ts`: the reducer that applies events to
+    chat state.
+  - Tests sit next to the file they test, such as `chat-state.test.ts`,
+    and run with Vitest.
 - `server/`: the WebSocket signaling server. Node runs its TypeScript
   directly, with no build step.
   - `src/`: one folder per module, with its tests next to it, such as

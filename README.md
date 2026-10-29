@@ -1,73 +1,56 @@
-# React + TypeScript + Vite
+# ulak
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A real-time chat for several participants. Peers connect to each other
+directly over WebRTC DataChannels in a full mesh. A small WebSocket
+signaling server only introduces them.
 
-Currently, two official plugins are available:
+## Message protocol
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Every message is a JSON object with a `type` field. Receivers check each
+message with a parser and drop anything malformed.
 
-## React Compiler
+### Signaling (client and server)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Defined in `server/src/signaling/signaling.ts`. The server never sees
+chat messages.
 
-## Expanding the ESLint configuration
+| Direction        | Message                            | Meaning                                            |
+| ---------------- | ---------------------------------- | -------------------------------------------------- |
+| server to client | `{ type: 'welcome', id, peers }`   | Your peer id and the ids of the peers already here |
+| server to client | `{ type: 'peer-joined', id }`      | A peer connected                                   |
+| server to client | `{ type: 'peer-left', id }`        | A peer disconnected                                |
+| client to server | `{ type: 'signal', to, signal }`   | Relay a WebRTC handshake step to peer `to`         |
+| server to client | `{ type: 'signal', from, signal }` | A handshake step from peer `from`                  |
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+A `signal` is an `offer` or `answer` with its `sdp`, or an `ice`
+candidate. The newcomer sends an offer to every peer that is already in
+the session, and each of them answers, so two peers never send offers to
+each other at the same time.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### Chat (peer to peer)
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+Defined in `client/src/protocol/protocol.ts`. Events don't name their
+sender: the receiver knows which peer each DataChannel belongs to.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+| Event                                          | Meaning                             |
+| ---------------------------------------------- | ----------------------------------- |
+| `{ type: 'hello', participant: { id, name } }` | Who the sender is                   |
+| `{ type: 'message', id, text, sentAt }`        | A new message                       |
+| `{ type: 'edit', id, text, editedAt }`         | The author changed a message's text |
+| `{ type: 'delete', id }`                       | The author deleted a message        |
+| `{ type: 'history', messages }`                | Every message the sender knows      |
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+- **Joining.** When a DataChannel opens, each side sends `hello` and then
+  `history`, so a newcomer sees the messages that were sent before it
+  joined. Each tab keeps its participant id and name in `sessionStorage`,
+  so a reload keeps the same identity.
+- **Ids and times.** The sender creates message ids and stamps times in
+  milliseconds from its own clock. Everyone orders the log by `sentAt`.
+- **Edits.** An edit replaces the text and sets `editedAt`, so the UI can
+  mark the message as edited.
+- **Deletes.** A delete keeps the message in the log with `deleted: true`
+  and its text cleared, so others see that it was deleted.
+- **Authorship.** A receiver applies an edit or delete only if it came
+  from the message's author.
+- **Merging history.** Peers merge history by message id. A deleted
+  version beats an edited one, and otherwise the later `editedAt` wins.
