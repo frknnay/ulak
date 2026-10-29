@@ -48,6 +48,8 @@ A pnpm workspace. ESLint, Prettier and TypeScript live at the root.
     parser.
   - `src/chat-state/chat-state.ts`: the reducer that applies events to
     chat state.
+  - `src/transport/transport.ts`: the WebRTC mesh that sends and receives
+    chat events, using the signaling server to connect peers.
   - Tests sit next to the file they test, such as `chat-state.test.ts`,
     and run with Vitest.
 - `server/`: the WebSocket signaling server. Node runs its TypeScript

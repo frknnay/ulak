@@ -41,6 +41,9 @@ importers:
 
   client:
     dependencies:
+      '@ulak/server':
+        specifier: workspace:*
+        version: link:../server
       lucide-react:
         specifier: ^1.63.0
         version: 1.63.0(@types/react@19.3.0)(react@19.3.1)
