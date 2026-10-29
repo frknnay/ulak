@@ -1,0 +1,41 @@
+.log {
+  flex: 1;
+  overflow-y: auto;
+  margin: 0;
+  padding: var(--space-2) var(--space-4);
+  list-style: none;
+}
+
+.entry {
+  padding: var(--space-3) 0;
+}
+
+.composer {
+  display: flex;
+  flex-direction: column;
+  margin: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+
+  &:focus-within {
+    border-color: var(--color-accent);
+  }
+}
+
+.input {
+  padding: var(--space-3) var(--space-3) 0;
+  border: none;
+  outline: none;
+  resize: none;
+  background: none;
+
+  &::placeholder {
+    color: var(--color-text-muted);
+  }
+}
+
+.send {
+  align-self: flex-end;
+  margin: 0 var(--space-1) var(--space-1) 0;
+  color: var(--color-text-muted);
+}

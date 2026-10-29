@@ -42,6 +42,8 @@ A pnpm workspace. ESLint, Prettier and TypeScript live at the root.
 - `client/`: the React app, built with Vite.
   - `src/components/`: common components shared across screens, each in
     its own folder, such as `icon-button/icon-button.tsx`.
+  - `src/screens/`: the screens from the mockup, each in its own folder,
+    such as `chat-screen/chat-screen.tsx`.
 
 ## Conventions
 
