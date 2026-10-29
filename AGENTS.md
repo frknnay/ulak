@@ -40,11 +40,14 @@ The UI follows the mockup in `design/mockup.png`.
 A pnpm workspace. ESLint, Prettier and TypeScript live at the root.
 
 - `client/`: the React app, built with Vite.
+  - `src/components/`: common components shared across screens, each in
+    its own folder, such as `icon-button/icon-button.tsx`.
 
 ## Conventions
 
-- Style components with CSS modules: put `Component.module.css` next to
-  `Component.tsx`. Global CSS is only for resets and shared custom
+- Name files and folders in kebab-case, such as `icon-button.tsx`.
+- Style components with CSS modules: put `icon-button.module.css` next to
+  `icon-button.tsx`. Global CSS is only for resets and shared custom
   properties such as colors and spacing.
 - Tests check behavior, not implementation details. Never weaken a test to
   make it pass; report the failure and its cause.
