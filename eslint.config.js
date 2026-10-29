@@ -10,6 +10,11 @@ export default defineConfig([
   {
     files: ['**/*.{ts,tsx}'],
     extends: [js.configs.recommended, tseslint.configs.recommended],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'error',
+      // Narrow with type guards instead of asserting. `as const` is allowed.
+      '@typescript-eslint/consistent-type-assertions': ['error', { assertionStyle: 'never' }],
+    },
   },
   {
     files: ['client/**/*.{ts,tsx}'],
