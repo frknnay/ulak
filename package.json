@@ -7,6 +7,7 @@
     "dev": "pnpm --parallel -r dev",
     "typecheck": "pnpm -r typecheck",
     "build": "pnpm typecheck && pnpm --filter @ulak/client build",
+    "test": "pnpm -r test",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

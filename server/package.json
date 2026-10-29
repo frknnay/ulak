@@ -1,0 +1,22 @@
+{
+  "name": "@ulak/server",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "exports": {
+    "./signaling": "./src/signaling/signaling.ts"
+  },
+  "scripts": {
+    "dev": "node --watch src/main.ts",
+    "start": "node src/main.ts",
+    "typecheck": "tsc",
+    "test": "node --test \"src/**/*.test.ts\""
+  },
+  "dependencies": {
+    "ws": "^8.22.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.2",
+    "@types/ws": "^8.18.2"
+  }
+}

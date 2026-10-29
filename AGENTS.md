@@ -44,6 +44,12 @@ A pnpm workspace. ESLint, Prettier and TypeScript live at the root.
     its own folder, such as `icon-button/icon-button.tsx`.
   - `src/screens/`: the screens from the mockup, each in its own folder,
     such as `chat-screen/chat-screen.tsx`.
+- `server/`: the WebSocket signaling server. Node runs its TypeScript
+  directly, with no build step.
+  - `src/`: one folder per module, with its tests next to it, such as
+    `signaling-server/signaling-server.test.ts`. Tests use `node:test`.
+  - `src/signaling/signaling.ts`: the signaling message types and their
+    parsers. The client imports them as `@ulak/server/signaling`.
 
 ## Conventions
 
@@ -61,6 +67,7 @@ Use pnpm, not npm or yarn. Run these from the repo root.
 - `pnpm dev`: start every package's dev server
 - `pnpm typecheck`: type-check every package
 - `pnpm build`: type-check, then build the client
+- `pnpm test`: run every package's tests
 - `pnpm lint`: run ESLint over the whole repo
 - `pnpm format`: format the whole repo with Prettier
 - `pnpm format:check`: fail if any file is not formatted
@@ -69,6 +76,6 @@ Use pnpm, not npm or yarn. Run these from the repo root.
 A husky pre-commit hook runs lint-staged, which formats and lints the
 staged files, then runs `pnpm typecheck`.
 
-A change is done when `pnpm lint`, `pnpm format:check` and `pnpm build`
-pass, along with the tests once a test runner exists. Test multi-participant behavior in 2 or more
-browser windows.
+A change is done when `pnpm lint`, `pnpm format:check`, `pnpm build` and
+`pnpm test` pass. Test multi-participant behavior in 2 or more browser
+windows.
