@@ -18,6 +18,9 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const [self] = useState(() => loadIdentity())
   const [state, dispatch] = useReducer(chatReducer, self, createChatState)
   const transport = useRef<Transport | null>(null)
+  // Whether the signaling connection is open. Assumed at first, so the
+  // composer doesn't flash as offline while the page loads.
+  const [online, setOnline] = useState(true)
 
   // The transport callbacks need the latest messages to send as history.
   const latestState = useRef(state)
@@ -31,6 +34,8 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     const connections = createConnections()
 
     const connection = connectTransport(signalingUrl, {
+      onOnline: () => setOnline(true),
+      onOffline: () => setOnline(false),
       onPeerOpen(peerId) {
         connection.send(peerId, { type: 'hello', participant: self })
         connection.send(peerId, {
@@ -66,6 +71,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
     return {
       selfId: self.id,
+      online,
       participants: Object.values(state.participants),
       log: chatLog(state),
       send(text) {
@@ -78,7 +84,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         publish({ type: 'delete', id })
       },
     }
-  }, [self, state])
+  }, [self, state, online])
 
   return <ChatContext value={value}>{children}</ChatContext>
 }

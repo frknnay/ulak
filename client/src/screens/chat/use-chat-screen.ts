@@ -8,7 +8,7 @@ type Editing = { id: string; original: string; text: string }
 // The chat log and the composer: what it shows, and what sending, editing
 // and deleting a message do.
 export function useChatScreen() {
-  const { selfId, log, send, edit, remove } = useChat()
+  const { selfId, online, log, send, edit, remove } = useChat()
   // The new message keeps its draft while the composer edits another one.
   const [draft, setDraft] = useState('')
   const [editing, setEditing] = useState<Editing | null>(null)
@@ -16,6 +16,7 @@ export function useChatScreen() {
 
   return {
     log,
+    online,
     // The composer's text box, focused when editing starts.
     input,
     // The composer's text: the message being edited, or the new one.

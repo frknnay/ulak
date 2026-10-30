@@ -19,8 +19,6 @@ signaling server only introduces them.
 >   reset, colors and spacing.
 > - **Husky and lint-staged.** Every commit is formatted, linted and
 >   type-checked before it lands, so the history stays clean.
-> - **Keep it small.** Reconnecting after a dropped signaling connection
->   is left out on purpose, so the core stays simple.
 >
 > The rules the agent works by are in [`AGENTS.md`](AGENTS.md).
 
@@ -126,6 +124,11 @@ Events don't name their sender: the receiver knows which peer each DataChannel b
   `history`, so a newcomer sees the messages that were sent before it
   joined. Each tab keeps its participant id and name in `sessionStorage`,
   so a reload keeps the same identity.
+- **Reconnecting.** If the signaling connection closes, the tab closes
+  its peer connections and connects again 2 seconds later, retrying until
+  the server is back. Meanwhile the composer says it's offline and is
+  disabled. The tab then rejoins like a newcomer, so the `history`
+  exchange catches it up on messages that were sent while it was away.
 - **Ids and times.** The sender creates message ids and stamps times in
   milliseconds from its own clock. Everyone orders the log by `sentAt`.
 - **Edits.** An edit replaces the text and sets `editedAt`, so the UI can
@@ -149,7 +152,8 @@ Events don't name their sender: the receiver knows which peer each DataChannel b
 - **End-to-end tests** (Playwright) open several participants as separate
   browser contexts in Chromium, against their own signaling server and
   client. They cover presence, sending, history for newcomers, leaving,
-  editing, deleting, and keeping the newest messages in view.
+  editing, deleting, keeping the newest messages in view, and rejoining
+  after a dropped signaling connection.
 
 The transport has no unit tests. Faking WebRTC would mostly test the fake,
 so the end-to-end tests cover it with real connections instead.

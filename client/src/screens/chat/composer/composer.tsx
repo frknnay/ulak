@@ -8,6 +8,8 @@ type ComposerProps = {
   value: string
   // The original text of the message being edited, or null for a new one.
   editing: string | null
+  // While offline, nothing can be sent, so the input is disabled.
+  offline: boolean
   onChange: (text: string) => void
   onSubmit: (text: string) => void
   onCancelEdit: () => void
@@ -17,6 +19,7 @@ export function Composer({
   inputRef,
   value,
   editing,
+  offline,
   onChange,
   onSubmit,
   onCancelEdit,
@@ -24,7 +27,7 @@ export function Composer({
   const text = value.trim()
 
   function submit() {
-    if (text) onSubmit(text)
+    if (text && !offline) onSubmit(text)
   }
 
   function handleSubmit(event: FormEvent) {
@@ -46,13 +49,18 @@ export function Composer({
     <form className={styles.composer} onSubmit={handleSubmit}>
       {editing !== null && (
         <div className={styles.editing}>
-          <div className={styles.editingLabel}>
+          <div className={styles.label}>
             <span>Editing message</span>
             <q className={styles.original}>{editing}</q>
           </div>
           <IconButton label="Cancel editing" className={styles.cancel} onClick={onCancelEdit}>
             <X />
           </IconButton>
+        </div>
+      )}
+      {offline && (
+        <div role="status" className={`${styles.label} ${styles.offline}`}>
+          Offline. Reconnecting…
         </div>
       )}
       <div className={styles.field}>
@@ -63,6 +71,7 @@ export function Composer({
           placeholder="Write to everyone"
           rows={2}
           value={value}
+          disabled={offline}
           onChange={(event) => onChange(event.target.value)}
           onKeyDown={handleKeyDown}
         />
@@ -70,7 +79,7 @@ export function Composer({
           type="submit"
           label={editing !== null ? 'Save' : 'Send'}
           className={styles.send}
-          disabled={!text}
+          disabled={!text || offline}
         >
           <SendHorizontal />
         </IconButton>

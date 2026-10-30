@@ -1,15 +1,23 @@
-import { expect, test as base, type BrowserContext, type Page } from '@playwright/test'
+import {
+  expect,
+  test as base,
+  type BrowserContext,
+  type Page,
+  type WebSocketRoute,
+} from '@playwright/test'
 
 // `join()` opens the app as a new participant, in its own browser context
-// like a separate window. Every participant leaves when the test ends, so
-// the next test starts with an empty session.
-const test = base.extend<{ join: () => Promise<Page> }>({
+// like a separate window. `setup` runs on the page before the app loads.
+// Every participant leaves when the test ends, so the next test starts
+// with an empty session.
+const test = base.extend<{ join: (setup?: (page: Page) => Promise<void>) => Promise<Page> }>({
   join: async ({ browser }, provide) => {
     const contexts: BrowserContext[] = []
-    await provide(async () => {
+    await provide(async (setup) => {
       const context = await browser.newContext()
       contexts.push(context)
       const page = await context.newPage()
+      await setup?.(page)
       await page.goto('/')
       return page
     })
@@ -146,4 +154,34 @@ test('the log follows new messages unless the reader scrolls up', async ({ join 
   await expect(bob.getByText('Message 31')).toBeInViewport()
   await send(alice, 'Message 32')
   await expect(bob.getByText('Message 32')).toBeInViewport()
+})
+
+test('a participant whose signaling connection drops rejoins', async ({ join }) => {
+  const alice = await join()
+  // Bob's signaling connection runs through the test, so the test can drop
+  // it. The config starts the signaling server on port 8090.
+  let signaling: { page: WebSocketRoute; server: WebSocketRoute } | undefined
+  const bob = await join((page) =>
+    page.routeWebSocket(/:8090\//, (route) => {
+      signaling = { page: route, server: route.connectToServer() }
+    }),
+  )
+  await expectParticipants(alice, 2)
+
+  await signaling?.server.close()
+  await signaling?.page.close()
+
+  // Bob sees he is offline and can't write, and Alice sees him leave.
+  const bobStatus = bob.getByRole('status')
+  const bobInput = bob.getByRole('textbox', { name: 'Message' })
+  await expect(bobStatus).toHaveText('Offline. Reconnecting…')
+  await expect(bobInput).toBeDisabled()
+  await expect(alice.getByText(/Guest \d{4} left/)).toBeVisible()
+  await send(alice, 'Sent while Bob was away')
+
+  // Bob rejoins on his own, and Alice's history brings him the message.
+  await expect(bobStatus).toHaveCount(0)
+  await expect(bobInput).toBeEnabled()
+  await expectParticipants(alice, 2)
+  await expect(bob.getByText('Sent while Bob was away')).toBeVisible()
 })

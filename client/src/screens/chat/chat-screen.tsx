@@ -17,6 +17,7 @@ export function ChatScreen() {
         inputRef={chat.input}
         value={chat.text}
         editing={chat.editingOriginal}
+        offline={!chat.online}
         onChange={chat.setText}
         onSubmit={chat.submit}
         onCancelEdit={chat.cancelEditing}

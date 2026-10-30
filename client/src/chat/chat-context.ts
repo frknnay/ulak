@@ -4,6 +4,8 @@ import type { Participant } from '../protocol/protocol'
 
 export type ChatContextValue = {
   selfId: string
+  // False while the tab reconnects to the signaling server.
+  online: boolean
   participants: Participant[]
   log: ChatLogEntry[]
   send: (text: string) => void

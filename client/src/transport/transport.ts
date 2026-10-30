@@ -6,7 +6,16 @@ import { parsePeerEvent, type PeerEvent } from '../protocol/protocol'
 // server only introduces peers and relays their handshake. Peer ids here
 // are the server's connection ids, not participant ids.
 
+// How long to wait before connecting again after the signaling connection
+// closes, or fails to open while the server is down.
+const reconnectDelay = 2000
+
 export type TransportHandlers = {
+  // The signaling connection is open, so this tab is in the session.
+  onOnline: () => void
+  // The signaling connection closed or failed to open, and the transport
+  // will try again. Every peer is closed by then.
+  onOffline: () => void
   // The DataChannel to a peer is open, so events can be sent to it.
   onPeerOpen: (peerId: string) => void
   onEvent: (peerId: string, event: PeerEvent) => void
@@ -23,17 +32,39 @@ export type Transport = {
 type Peer = { connection: RTCPeerConnection; channel?: RTCDataChannel; open: boolean }
 
 export function connectTransport(signalingUrl: string, handlers: TransportHandlers): Transport {
-  const socket = new WebSocket(signalingUrl)
   const peers = new Map<string, Peer>()
-
+  let retry: ReturnType<typeof setTimeout> | undefined
+  let closed = false
   // Handle signaling messages one at a time, so an ICE candidate is never
   // added before the offer or answer that precedes it has been applied.
   let queue = Promise.resolve()
-  socket.addEventListener('message', (event) => {
-    const message = parseServerMessage(String(event.data))
-    if (!message) return
-    queue = queue.then(() => handleSignaling(message)).catch(console.error)
-  })
+  let socket = connect()
+
+  function connect(): WebSocket {
+    const ws = new WebSocket(signalingUrl)
+    ws.addEventListener('open', () => handlers.onOnline())
+    ws.addEventListener('message', (event) => {
+      const message = parseServerMessage(String(event.data))
+      if (!message) return
+      queue = queue
+        .then(() => {
+          // Skip messages left in the queue after this connection closed.
+          if (ws.readyState === WebSocket.OPEN) return handleSignaling(message)
+        })
+        .catch(console.error)
+    })
+
+    // Without the signaling server this tab can't meet new peers, and the
+    // server has told the others that it left. So it closes every peer
+    // too, connects again later and rejoins like a newcomer.
+    ws.addEventListener('close', () => {
+      if (closed) return
+      closePeers()
+      handlers.onOffline()
+      retry = setTimeout(() => (socket = connect()), reconnectDelay)
+    })
+    return ws
+  }
 
   async function handleSignaling(message: ServerMessage) {
     switch (message.type) {
@@ -136,14 +167,20 @@ export function connectTransport(signalingUrl: string, handlers: TransportHandle
     if (channel?.readyState === 'open') channel.send(JSON.stringify(event))
   }
 
+  function closePeers() {
+    for (const peerId of [...peers.keys()]) closePeer(peerId)
+  }
+
   return {
     send,
     broadcast(event) {
       for (const peerId of peers.keys()) send(peerId, event)
     },
     close() {
+      closed = true
+      clearTimeout(retry)
       socket.close()
-      for (const peerId of [...peers.keys()]) closePeer(peerId)
+      closePeers()
     },
   }
 }

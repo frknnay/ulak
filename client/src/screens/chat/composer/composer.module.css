@@ -20,21 +20,28 @@
   display: flex;
   align-items: center;
   gap: var(--space-1);
-  font-size: 13px;
 }
 
-/* A quote of the message being edited, like a reply preview. */
-.editingLabel {
+/* A strip above the input, like a reply preview: a quote of the message
+   being edited, or that the chat is offline. */
+.label {
+  --label-color: var(--color-accent);
+
   display: flex;
   flex: 1;
   flex-direction: column;
   min-width: 0;
   padding: var(--space-1) var(--space-2);
-  border-left: 3px solid var(--color-accent);
+  border-left: 3px solid var(--label-color);
   border-radius: 2px;
-  background: color-mix(in srgb, var(--color-accent) 8%, transparent);
-  color: var(--color-accent);
+  background: color-mix(in srgb, var(--label-color) 8%, transparent);
+  color: var(--label-color);
+  font-size: 13px;
   font-weight: 600;
+}
+
+.offline {
+  --label-color: var(--color-text-muted);
 }
 
 /* One line of the message, so a long one doesn't push the input away. */
