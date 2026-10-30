@@ -1,8 +1,88 @@
-# ulak
+# Ulak
+
+_Ulak_ is Turkish for "messenger", the courier who carried news from town
+to town.
 
 A real-time chat for several participants. Peers connect to each other
 directly over WebRTC DataChannels in a full mesh. A small WebSocket
 signaling server only introduces them.
+
+> **How this was built.** The code is AI-generated, written with an AI
+> coding agent, but I made the design decisions and steered it. These are
+> the main ones and why:
+>
+> - **Logic in hooks, markup in components.** A screen's state and
+>   handlers live in a hook next to it, such as `useChatScreen`, so the UI
+>   stays separate from the business code.
+> - **CSS modules.** Each component's styles sit next to it and are
+>   scoped to it, so class names never clash. Global CSS is only for the
+>   reset, colors and spacing.
+> - **Husky and lint-staged.** Every commit is formatted, linted and
+>   type-checked before it lands, so the history stays clean.
+> - **Keep it small.** Reconnecting after a dropped signaling connection
+>   is left out on purpose, so the core stays simple.
+>
+> The rules the agent works by are in [`AGENTS.md`](AGENTS.md).
+
+## Running it
+
+You need Node 22.18 or newer, which runs the server's TypeScript
+directly, and pnpm.
+
+```sh
+pnpm install
+pnpm dev
+```
+
+`pnpm dev` starts the signaling server on `ws://localhost:8080` and the
+client on `http://localhost:5173`. Open the client in two or more windows
+to chat. Each tab is its own participant, with a random name such as
+"Guest 4821".
+
+To build the client, run `pnpm build`, then serve the build with
+`pnpm preview`. The signaling server still has to run, for example with
+`pnpm --filter @ulak/server start`.
+
+Other commands:
+
+- `pnpm test`: unit tests for the client and the server
+- `pnpm test:e2e`: end-to-end tests in Chromium. The first run needs
+  `pnpm --filter @ulak/client exec playwright install chromium`.
+- `pnpm lint`, `pnpm format:check`, `pnpm typecheck`
+
+## Architecture
+
+I chose peer-to-peer (option B). Each client opens a WebRTC DataChannel to
+every other client, a full mesh, so chat messages never pass through a
+server. The signaling server only tells clients who else is there and
+relays their offers, answers and ICE candidates. It holds no chat state,
+so it stays about 50 lines.
+
+I picked it because it fits a chat inside a meeting: groups are small, and
+a mesh needs no server to relay or store messages. The cost is that every
+peer has to keep the shared history itself, which the protocol below
+handles.
+
+The client keeps three layers apart, so the core logic runs without a
+browser:
+
+- **Protocol and state**
+  ([`client/src/protocol`](client/src/protocol),
+  [`client/src/chat-state`](client/src/chat-state)): plain TypeScript.
+  Event types, a parser that drops malformed input, and a reducer that
+  applies events to the chat state.
+- **Transport** ([`client/src/transport`](client/src/transport)): the
+  WebRTC mesh. It sends and receives parsed events behind a small
+  interface and knows nothing about chat state.
+- **UI** ([`client/src/screens`](client/src/screens),
+  [`client/src/components`](client/src/components)): React.
+  `ChatProvider` connects the transport to the reducer, and screens read
+  the chat with `useChat()`. Shared components are presentational.
+
+The signaling message types live in the server package, and the client
+imports them as
+[`@ulak/server/signaling`](server/src/signaling/signaling.ts), so both
+sides parse the same types.
 
 ## Message protocol
 
@@ -11,8 +91,9 @@ message with a parser and drop anything malformed.
 
 ### Signaling (client and server)
 
-Defined in `server/src/signaling/signaling.ts`. The server never sees
-chat messages.
+Defined in
+[`server/src/signaling/signaling.ts`](server/src/signaling/signaling.ts).
+The server never sees chat messages.
 
 | Direction        | Message                            | Meaning                                            |
 | ---------------- | ---------------------------------- | -------------------------------------------------- |
@@ -29,8 +110,9 @@ each other at the same time.
 
 ### Chat (peer to peer)
 
-Defined in `client/src/protocol/protocol.ts`. Events don't name their
-sender: the receiver knows which peer each DataChannel belongs to.
+Defined in
+[`client/src/protocol/protocol.ts`](client/src/protocol/protocol.ts).
+Events don't name their sender: the receiver knows which peer each DataChannel belongs to.
 
 | Event                                          | Meaning                             |
 | ---------------------------------------------- | ----------------------------------- |
@@ -54,3 +136,20 @@ sender: the receiver knows which peer each DataChannel belongs to.
   from the message's author.
 - **Merging history.** Peers merge history by message id. A deleted
   version beats an edited one, and otherwise the later `editedAt` wins.
+
+## Testing
+
+- **Unit tests** (Vitest) cover the core logic without a browser: the
+  event parser, the chat reducer (messages, edits, deletes, authorship,
+  merging history), linking connections to participants, and the stored
+  identity.
+- **Server tests** (`node:test`) start a real signaling server on a free
+  port and check that it introduces peers, relays signals only to their
+  target, announces joins and leaves, and ignores malformed messages.
+- **End-to-end tests** (Playwright) open several participants as separate
+  browser contexts in Chromium, against their own signaling server and
+  client. They cover presence, sending, history for newcomers, leaving,
+  editing, deleting, and keeping the newest messages in view.
+
+The transport has no unit tests. Faking WebRTC would mostly test the fake,
+so the end-to-end tests cover it with real connections instead.
