@@ -2,7 +2,9 @@ import type { ReactNode } from 'react'
 import styles from './message.module.css'
 
 type MessageProps = {
-  author: string
+  // The author's name, or null when the message continues the author's
+  // group and shows only its text.
+  author: string | null
   time: string
   text: string
   edited: boolean
@@ -14,19 +16,19 @@ type MessageProps = {
 export function Message({ author, time, text, edited, deleted, actions }: MessageProps) {
   return (
     <article className={styles.message}>
-      <header className={styles.header}>
-        <span className={styles.author}>{author}</span>
+      {author !== null && <header className={styles.author}>{author}</header>}
+      <div className={styles.body}>
+        {deleted ? (
+          <p className={styles.deleted}>Message deleted</p>
+        ) : (
+          <p className={styles.text}>{text}</p>
+        )}
         <span className={styles.meta}>
           {edited && !deleted && <span className={styles.edited}>(edited)</span>}
           <time className={styles.time}>{time}</time>
           {actions && <span className={styles.actions}>{actions}</span>}
         </span>
-      </header>
-      {deleted ? (
-        <p className={styles.deleted}>Message deleted</p>
-      ) : (
-        <p className={styles.text}>{text}</p>
-      )}
+      </div>
     </article>
   )
 }

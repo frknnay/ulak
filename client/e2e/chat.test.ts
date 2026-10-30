@@ -160,14 +160,14 @@ test('the log follows new messages unless the reader scrolls up', async ({ join 
   await bob.mouse.wheel(0, -10_000)
   await expect(bob.getByText('Message 1', { exact: true })).toBeInViewport()
   await send(alice, 'Message 31')
-  await expect(bob.getByText('Message 31')).toBeAttached()
-  await expect(bob.getByText('Message 31')).not.toBeInViewport()
+  await expect(bob.getByText('Message 31', { exact: true })).toBeAttached()
+  await expect(bob.getByText('Message 31', { exact: true })).not.toBeInViewport()
 
   // Back at the bottom, Bob follows new messages again.
   await bob.mouse.wheel(0, 10_000)
-  await expect(bob.getByText('Message 31')).toBeInViewport()
+  await expect(bob.getByText('Message 31', { exact: true })).toBeInViewport()
   await send(alice, 'Message 32')
-  await expect(bob.getByText('Message 32')).toBeInViewport()
+  await expect(bob.getByText('Message 32', { exact: true })).toBeInViewport()
 })
 
 test('a participant whose signaling connection drops rejoins', async ({ join }) => {

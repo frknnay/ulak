@@ -17,6 +17,13 @@ const timeFormat = new Intl.DateTimeFormat(undefined, {
 // messages.
 const bottomSlack = 40
 
+// Whether a message continues its author's group: the entry before it is a
+// message from the same author. Another author's message or a notice
+// starts a new group.
+function continuesGroup(previous: ChatLogEntry | undefined, message: ChatMessage): boolean {
+  return previous?.kind === 'message' && previous.message.authorId === message.authorId
+}
+
 type MessageLogProps = {
   log: ChatLogEntry[]
   // The name shown above the message.
@@ -46,11 +53,22 @@ export function MessageLog({ log, authorName, canChange, onEdit, onDelete }: Mes
 
   return (
     <ol ref={element} className={styles.log} onScroll={handleScroll}>
-      {log.map((entry) =>
-        entry.kind === 'message' ? (
-          <li key={entry.message.id} className={styles.entry}>
+      {log.map((entry, index) => {
+        if (entry.kind === 'notice') {
+          return (
+            <li key={entry.notice.id} className={styles.entry}>
+              <Notice time={timeFormat.format(entry.notice.at)} text={entry.notice.text} />
+            </li>
+          )
+        }
+        const continued = continuesGroup(log[index - 1], entry.message)
+        return (
+          <li
+            key={entry.message.id}
+            className={continued ? `${styles.entry} ${styles.continued}` : styles.entry}
+          >
             <Message
-              author={authorName(entry.message)}
+              author={continued ? null : authorName(entry.message)}
               time={timeFormat.format(entry.message.sentAt)}
               text={entry.message.text}
               edited={entry.message.editedAt !== null}
@@ -68,12 +86,8 @@ export function MessageLog({ log, authorName, canChange, onEdit, onDelete }: Mes
               }
             />
           </li>
-        ) : (
-          <li key={entry.notice.id} className={styles.entry}>
-            <Notice time={timeFormat.format(entry.notice.at)} text={entry.notice.text} />
-          </li>
-        ),
-      )}
+        )
+      })}
     </ol>
   )
 }

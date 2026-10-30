@@ -9,3 +9,12 @@
 .entry {
   padding: var(--space-3) 0;
 }
+
+/* Messages in one author's group sit close together. */
+.entry:has(+ .continued) {
+  padding-bottom: var(--space-1);
+}
+
+.continued {
+  padding-top: 0;
+}
