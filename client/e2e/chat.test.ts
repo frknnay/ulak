@@ -124,3 +124,26 @@ test('an author deletes a message and the others see it was deleted', async ({ j
   await expect(bob.getByText('Message deleted')).toBeVisible()
   await expect(bob.getByText('Oops, wrong chat')).toHaveCount(0)
 })
+
+test('the log follows new messages unless the reader scrolls up', async ({ join }) => {
+  const alice = await join()
+  const bob = await join()
+  await expectParticipants(alice, 2)
+  for (let i = 1; i <= 30; i++) await send(alice, `Message ${i}`)
+
+  await expect(bob.getByText('Message 30', { exact: true })).toBeInViewport()
+
+  // Reading older messages, Bob isn't pulled away by a new one.
+  await bob.getByText('Message 30', { exact: true }).hover()
+  await bob.mouse.wheel(0, -10_000)
+  await expect(bob.getByText('Message 1', { exact: true })).toBeInViewport()
+  await send(alice, 'Message 31')
+  await expect(bob.getByText('Message 31')).toBeAttached()
+  await expect(bob.getByText('Message 31')).not.toBeInViewport()
+
+  // Back at the bottom, Bob follows new messages again.
+  await bob.mouse.wheel(0, 10_000)
+  await expect(bob.getByText('Message 31')).toBeInViewport()
+  await send(alice, 'Message 32')
+  await expect(bob.getByText('Message 32')).toBeInViewport()
+})
