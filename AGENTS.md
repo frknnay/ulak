@@ -73,6 +73,9 @@ A pnpm workspace. ESLint, Prettier and TypeScript live at the root.
   properties such as colors and spacing.
 - Tests check behavior, not implementation details. Never weaken a test to
   make it pass; report the failure and its cause.
+- Move and rename tracked files with `git mv`, not `mv`, and commit a
+  move apart from changes to the moved files, so Git shows it as a
+  rename.
 
 ## Commands
 
