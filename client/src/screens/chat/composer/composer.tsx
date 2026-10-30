@@ -1,6 +1,7 @@
 import type { FormEvent, KeyboardEvent, Ref } from 'react'
 import { SendHorizontal, X } from 'lucide-react'
 import { IconButton } from '../../../components/icon-button/icon-button'
+import { ComposerStrip } from './composer-strip/composer-strip'
 import styles from './composer.module.css'
 
 type ComposerProps = {
@@ -48,20 +49,21 @@ export function Composer({
   return (
     <form className={styles.composer} onSubmit={handleSubmit}>
       {editing !== null && (
-        <div className={styles.editing}>
-          <div className={styles.label}>
-            <span>Editing message</span>
-            <q className={styles.original}>{editing}</q>
-          </div>
-          <IconButton label="Cancel editing" className={styles.cancel} onClick={onCancelEdit}>
-            <X />
-          </IconButton>
-        </div>
+        <ComposerStrip
+          action={
+            <IconButton label="Cancel editing" className={styles.cancel} onClick={onCancelEdit}>
+              <X />
+            </IconButton>
+          }
+        >
+          <span>Editing message</span>
+          <q className={styles.original}>{editing}</q>
+        </ComposerStrip>
       )}
       {offline && (
-        <div role="status" className={`${styles.label} ${styles.offline}`}>
+        <ComposerStrip tone="muted" role="status">
           Offline. Reconnecting…
-        </div>
+        </ComposerStrip>
       )}
       <div className={styles.field}>
         <textarea

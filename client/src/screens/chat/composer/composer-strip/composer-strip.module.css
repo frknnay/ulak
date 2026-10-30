@@ -1,0 +1,27 @@
+.strip {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.label {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  padding: var(--space-1) var(--space-2);
+  border-left: 3px solid var(--label-color);
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--label-color) 8%, transparent);
+  color: var(--label-color);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.accent {
+  --label-color: var(--color-accent);
+}
+
+.muted {
+  --label-color: var(--color-text-muted);
+}
