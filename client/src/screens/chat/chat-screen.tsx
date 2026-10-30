@@ -1,11 +1,10 @@
-import { useRef, useState, type FormEvent, type KeyboardEvent, type Ref } from 'react'
+import type { FormEvent, KeyboardEvent, Ref } from 'react'
 import { SendHorizontal, X } from 'lucide-react'
-import { useChat } from '../../chat/chat-context'
-import type { Message as ChatMessage } from '../../protocol/protocol'
 import { IconButton } from '../../components/icon-button/icon-button'
 import { Menu } from '../../components/menu/menu'
 import { Message } from '../../components/message/message'
 import { Notice } from '../../components/notice/notice'
+import { useChatScreen } from './use-chat-screen'
 import styles from './chat-screen.module.css'
 
 // Times as in the mockup, such as 09:21.
@@ -15,41 +14,13 @@ const timeFormat = new Intl.DateTimeFormat(undefined, {
   hourCycle: 'h23',
 })
 
-// A message that this participant is changing in the composer.
-type Editing = { id: string; original: string; text: string }
-
 export function ChatScreen() {
-  const { selfId, log, send, edit, remove } = useChat()
-  // The new message keeps its draft while the composer edits another one.
-  const [draft, setDraft] = useState('')
-  const [editing, setEditing] = useState<Editing | null>(null)
-  const input = useRef<HTMLTextAreaElement>(null)
-
-  function startEditing(message: ChatMessage) {
-    setEditing({ id: message.id, original: message.text, text: message.text })
-    input.current?.focus()
-  }
-
-  function deleteMessage(message: ChatMessage) {
-    if (!confirm('Delete this message?')) return
-    remove(message.id)
-    if (editing?.id === message.id) setEditing(null)
-  }
-
-  function submit(text: string) {
-    if (!editing) {
-      send(text)
-      setDraft('')
-      return
-    }
-    if (text !== editing.original) edit(editing.id, text)
-    setEditing(null)
-  }
+  const chat = useChatScreen()
 
   return (
     <>
       <ol className={styles.log}>
-        {log.map((entry) =>
+        {chat.log.map((entry) =>
           entry.kind === 'message' ? (
             <li key={entry.message.id} className={styles.entry}>
               <Message
@@ -59,13 +30,12 @@ export function ChatScreen() {
                 edited={entry.message.editedAt !== null}
                 deleted={entry.message.deleted}
                 actions={
-                  entry.message.authorId === selfId &&
-                  !entry.message.deleted && (
+                  chat.canChange(entry.message) && (
                     <Menu
                       label="Message actions"
                       items={[
-                        { label: 'Edit', onSelect: () => startEditing(entry.message) },
-                        { label: 'Delete', onSelect: () => deleteMessage(entry.message) },
+                        { label: 'Edit', onSelect: () => chat.startEditing(entry.message) },
+                        { label: 'Delete', onSelect: () => chat.deleteMessage(entry.message) },
                       ]}
                     />
                   )
@@ -80,12 +50,12 @@ export function ChatScreen() {
         )}
       </ol>
       <Composer
-        inputRef={input}
-        value={editing ? editing.text : draft}
-        editing={editing?.original ?? null}
-        onChange={(text) => (editing ? setEditing({ ...editing, text }) : setDraft(text))}
-        onSubmit={submit}
-        onCancelEdit={() => setEditing(null)}
+        inputRef={chat.input}
+        value={chat.text}
+        editing={chat.editingOriginal}
+        onChange={chat.setText}
+        onSubmit={chat.submit}
+        onCancelEdit={chat.cancelEditing}
       />
     </>
   )
