@@ -54,10 +54,13 @@ A pnpm workspace. ESLint, Prettier and TypeScript live at the root.
     Screens read the chat and send messages with `useChat()`, and
     components stay presentational.
   - Tests sit next to the file they test, such as `chat-state.test.ts`,
-    and run with Vitest.
+    and run with Vitest. Component tests, such as `message-log.test.tsx`,
+    render with Testing Library in jsdom and cover how one window shows
+    the chat.
   - `e2e/`: Playwright tests that open several participants in Chromium
     against their own signaling server and client. Add a scenario with
-    each user-facing feature.
+    each feature that needs several participants, such as messages
+    reaching peers or a participant rejoining.
 - `server/`: the WebSocket signaling server. Node runs its TypeScript
   directly, with no build step.
   - `src/`: one folder per module, with its tests next to it, such as
