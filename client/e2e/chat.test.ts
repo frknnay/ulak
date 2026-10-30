@@ -74,6 +74,20 @@ test('a message reaches every other participant', async ({ join }) => {
   await expect(carol.getByText('Hello from Alice')).toBeVisible()
 })
 
+test('a participant sees its own messages as sent by You', async ({ join }) => {
+  const alice = await join()
+  const bob = await join()
+  await expectParticipants(alice, 2)
+
+  await send(alice, 'Who sent this?')
+
+  const own = alice.getByRole('article').filter({ hasText: 'Who sent this?' })
+  await expect(own.getByText('You', { exact: true })).toBeVisible()
+  const received = bob.getByRole('article').filter({ hasText: 'Who sent this?' })
+  await expect(received.getByText(/^Guest \d{4}$/)).toBeVisible()
+  await expect(received.getByText('You', { exact: true })).toHaveCount(0)
+})
+
 test('a newcomer sees the messages sent before it joined', async ({ join }) => {
   const alice = await join()
   const bob = await join()

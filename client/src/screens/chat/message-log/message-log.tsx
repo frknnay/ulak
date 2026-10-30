@@ -19,13 +19,15 @@ const bottomSlack = 40
 
 type MessageLogProps = {
   log: ChatLogEntry[]
+  // The name shown above the message.
+  authorName: (message: ChatMessage) => string
   // Whether this participant may edit and delete the message.
   canChange: (message: ChatMessage) => boolean
   onEdit: (message: ChatMessage) => void
   onDelete: (message: ChatMessage) => void
 }
 
-export function MessageLog({ log, canChange, onEdit, onDelete }: MessageLogProps) {
+export function MessageLog({ log, authorName, canChange, onEdit, onDelete }: MessageLogProps) {
   const element = useRef<HTMLOListElement>(null)
   // Whether the log scrolls to new entries. It stops while the participant
   // scrolls up to read older messages, so they don't jump away.
@@ -48,7 +50,7 @@ export function MessageLog({ log, canChange, onEdit, onDelete }: MessageLogProps
         entry.kind === 'message' ? (
           <li key={entry.message.id} className={styles.entry}>
             <Message
-              author={entry.message.authorName}
+              author={authorName(entry.message)}
               time={timeFormat.format(entry.message.sentAt)}
               text={entry.message.text}
               edited={entry.message.editedAt !== null}

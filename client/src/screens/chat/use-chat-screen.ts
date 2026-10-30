@@ -24,6 +24,11 @@ export function useChatScreen() {
     // The original text of the message being edited, or null for a new one.
     editingOriginal: editing?.original ?? null,
 
+    // Own messages show "You" in place of the author's name.
+    authorName(message: Message) {
+      return message.authorId === selfId ? 'You' : message.authorName
+    },
+
     // Only the author can change a message, and not after deleting it.
     canChange(message: Message) {
       return message.authorId === selfId && !message.deleted

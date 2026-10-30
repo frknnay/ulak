@@ -9,6 +9,7 @@ export function ChatScreen() {
     <>
       <MessageLog
         log={chat.log}
+        authorName={chat.authorName}
         canChange={chat.canChange}
         onEdit={chat.startEditing}
         onDelete={chat.deleteMessage}
