@@ -43,7 +43,7 @@ A pnpm workspace. ESLint, Prettier and TypeScript live at the root.
   - `src/components/`: common components shared across screens, each in
     its own folder, such as `icon-button/icon-button.tsx`.
   - `src/screens/`: the screens from the mockup, each in its own folder,
-    such as `chat-screen/chat-screen.tsx`.
+    such as `chat/chat-screen.tsx`.
   - `src/protocol/protocol.ts`: the peer-to-peer chat events and their
     parser.
   - `src/chat-state/chat-state.ts`: the reducer that applies events to
