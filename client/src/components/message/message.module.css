@@ -1,3 +1,30 @@
+/* Actions sit at the far right and take no room until the pointer is
+   over the message, focus is inside it or its menu is open. Then they
+   appear and push the time to the left. Hidden actions stay focusable,
+   so keyboard users reach them with Tab. Touch screens can't hover, so
+   they always show there. */
+.actions {
+  display: flex;
+  width: 0;
+  overflow: hidden;
+  /* Cancel the gap before it while hidden. */
+  margin-inline-start: calc(-1 * var(--space-2));
+
+  .message:hover &,
+  .message:focus-within &,
+  .message:has(:popover-open) & {
+    width: auto;
+    overflow: visible;
+    margin-inline-start: 0;
+  }
+
+  @media (hover: none) {
+    width: auto;
+    overflow: visible;
+    margin-inline-start: 0;
+  }
+}
+
 .header {
   display: flex;
   align-items: baseline;
@@ -9,12 +36,24 @@
   font-weight: 600;
 }
 
-.time {
+.meta {
+  display: flex;
   flex-shrink: 0;
+  align-items: center;
+  gap: var(--space-2);
   font-size: 13px;
+}
+
+.edited {
+  color: var(--color-text-muted);
 }
 
 .text {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
+}
+
+.deleted {
+  color: var(--color-text-muted);
+  font-style: italic;
 }

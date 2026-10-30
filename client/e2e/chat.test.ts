@@ -32,6 +32,15 @@ async function send(page: Page, text: string) {
   await page.keyboard.press('Enter')
 }
 
+// Hovers the message with this text to reveal its ⋯ menu, opens the
+// menu and picks an action.
+async function act(page: Page, text: string, action: 'Edit' | 'Delete') {
+  const message = page.getByRole('article').filter({ hasText: text })
+  await message.hover()
+  await message.getByRole('button', { name: 'Message actions' }).click()
+  await page.getByRole('button', { name: action }).click()
+}
+
 test('participants see each other', async ({ join }) => {
   const alice = await join()
   const bob = await join()
@@ -78,4 +87,40 @@ test('the others see a participant leave', async ({ join }) => {
 
   await expect(alice.getByText(/Guest \d{4} left/)).toBeVisible()
   await expectParticipants(alice, 1)
+})
+
+test('an author edits a message and the others see it was edited', async ({ join }) => {
+  const alice = await join()
+  const bob = await join()
+  await expectParticipants(alice, 2)
+  await send(alice, 'Meet at 10')
+  await expect(bob.getByText('Meet at 10')).toBeVisible()
+
+  // Only the author can change a message.
+  await expect(bob.getByRole('button', { name: 'Message actions' })).toHaveCount(0)
+
+  await act(alice, 'Meet at 10', 'Edit')
+  const input = alice.getByRole('textbox', { name: 'Message' })
+  await expect(input).toHaveValue('Meet at 10')
+  await input.fill('Meet at 11')
+  await alice.keyboard.press('Enter')
+
+  const message = bob.getByRole('article').filter({ hasText: 'Meet at 11' })
+  await expect(message.getByText('(edited)')).toBeVisible()
+  await expect(bob.getByText('Meet at 10')).toHaveCount(0)
+  await expect(input).toHaveValue('')
+})
+
+test('an author deletes a message and the others see it was deleted', async ({ join }) => {
+  const alice = await join()
+  const bob = await join()
+  await expectParticipants(alice, 2)
+  await send(alice, 'Oops, wrong chat')
+  await expect(bob.getByText('Oops, wrong chat')).toBeVisible()
+
+  alice.once('dialog', (dialog) => dialog.accept())
+  await act(alice, 'Oops, wrong chat', 'Delete')
+
+  await expect(bob.getByText('Message deleted')).toBeVisible()
+  await expect(bob.getByText('Oops, wrong chat')).toHaveCount(0)
 })

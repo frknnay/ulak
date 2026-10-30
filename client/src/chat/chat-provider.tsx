@@ -71,6 +71,12 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       send(text) {
         publish({ type: 'message', id: crypto.randomUUID(), text, sentAt: Date.now() })
       },
+      edit(id, text) {
+        publish({ type: 'edit', id, text, editedAt: Date.now() })
+      },
+      remove(id) {
+        publish({ type: 'delete', id })
+      },
     }
   }, [self, state])
 
