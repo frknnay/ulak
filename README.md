@@ -119,6 +119,7 @@ Events don't name their sender: the receiver knows which peer each DataChannel b
 | `{ type: 'edit', id, text, editedAt }`         | The author changed a message's text |
 | `{ type: 'delete', id }`                       | The author deleted a message        |
 | `{ type: 'history', messages }`                | Every message the sender knows      |
+| `{ type: 'typing' }`                           | The sender is writing a message     |
 
 - **Joining.** When a DataChannel opens, each side sends `hello` and then
   `history`, so a newcomer sees the messages that were sent before it
@@ -139,21 +140,26 @@ Events don't name their sender: the receiver knows which peer each DataChannel b
   from the message's author.
 - **Merging history.** Peers merge history by message id. A deleted
   version beats an edited one, and otherwise the later `editedAt` wins.
+- **Typing.** While a participant writes a new message, they send
+  `typing` at most every 2 seconds. The others show their name above the
+  composer until that participant's message arrives, or until 4 seconds
+  pass without another `typing`. Since stopping is a timeout and not an
+  event, a closed tab can't leave a name behind.
 
 ## Testing
 
 - **Unit tests** (Vitest) cover the core logic without a browser: the
   event parser, the chat reducer (messages, edits, deletes, authorship,
-  merging history), linking connections to participants, and the stored
-  identity.
+  merging history, typing), linking connections to participants, and the
+  stored identity.
 - **Server tests** (`node:test`) start a real signaling server on a free
   port and check that it introduces peers, relays signals only to their
   target, announces joins and leaves, and ignores malformed messages.
 - **End-to-end tests** (Playwright) open several participants as separate
   browser contexts in Chromium, against their own signaling server and
   client. They cover presence, sending, history for newcomers, leaving,
-  editing, deleting, keeping the newest messages in view, and rejoining
-  after a dropped signaling connection.
+  editing, deleting, showing who is typing, keeping the newest messages in
+  view, and rejoining after a dropped signaling connection.
 
 The transport has no unit tests. Faking WebRTC would mostly test the fake,
 so the end-to-end tests cover it with real connections instead.

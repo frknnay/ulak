@@ -177,6 +177,38 @@ describe('presence', () => {
   })
 })
 
+describe('typing', () => {
+  const typing = { type: 'typing' } as const
+
+  test('lists others who are typing, in the order they started', () => {
+    const state = session(from('bob', typing), from('alice', typing), from('bob', typing))
+    expect(state.typing).toEqual(['bob', 'alice'])
+  })
+
+  test('does not list this participant', () => {
+    expect(session(from('self', typing)).typing).toEqual([])
+  })
+
+  test('ignores typing from someone who has not said hello', () => {
+    expect(session(from('mallory', typing)).typing).toEqual([])
+  })
+
+  test('stops listing someone once their message arrives', () => {
+    const state = session(from('alice', typing), from('bob', typing), from('alice', hi))
+    expect(state.typing).toEqual(['bob'])
+  })
+
+  test('stops listing someone whose typing stopped', () => {
+    const state = session(from('alice', typing), { type: 'stopped-typing', participantId: 'alice' })
+    expect(state.typing).toEqual([])
+  })
+
+  test('stops listing someone who leaves', () => {
+    const state = session(from('alice', typing), { type: 'left', participantId: 'alice', at: 500 })
+    expect(state.typing).toEqual([])
+  })
+})
+
 describe('chatLog', () => {
   test('orders messages and notices by time, whatever order they arrived in', () => {
     const state = session(

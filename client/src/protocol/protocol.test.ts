@@ -18,6 +18,7 @@ describe('parsePeerEvent', () => {
     { type: 'edit', id: 'm1', text: 'Hello', editedAt: 2000 },
     { type: 'delete', id: 'm1' },
     { type: 'history', messages: [message, { ...message, id: 'm2', editedAt: 2000 }] },
+    { type: 'typing' },
   ])('accepts a valid $type event', (event) => {
     expect(parsePeerEvent(JSON.stringify(event))).toEqual(event)
   })

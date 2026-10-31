@@ -1,5 +1,6 @@
 import { Composer } from './composer/composer'
 import { MessageLog } from './message-log/message-log'
+import { TypingIndicator } from './typing-indicator/typing-indicator'
 import { useChatScreen } from './use-chat-screen'
 
 export function ChatScreen() {
@@ -14,6 +15,7 @@ export function ChatScreen() {
         onEdit={chat.startEditing}
         onDelete={chat.deleteMessage}
       />
+      <TypingIndicator names={chat.typingNames} />
       <Composer
         inputRef={chat.input}
         value={chat.text}

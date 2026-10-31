@@ -8,7 +8,11 @@ export type ChatContextValue = {
   online: boolean
   participants: Participant[]
   log: ChatLogEntry[]
+  // Names of the others who are writing a message.
+  typingNames: string[]
   send: (text: string) => void
+  // Tells the others that this participant is writing a message.
+  announceTyping: () => void
   // Only the author's edits and deletes count, so these are for own messages.
   edit: (id: string, text: string) => void
   remove: (id: string) => void

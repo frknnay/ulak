@@ -8,7 +8,7 @@ type Editing = { id: string; original: string; text: string }
 // The chat log and the composer: what it shows, and what sending, editing
 // and deleting a message do.
 export function useChatScreen() {
-  const { selfId, online, log, send, edit, remove } = useChat()
+  const { selfId, online, log, typingNames, send, edit, remove, announceTyping } = useChat()
   // The new message keeps its draft while the composer edits another one.
   const [draft, setDraft] = useState('')
   const [editing, setEditing] = useState<Editing | null>(null)
@@ -17,6 +17,7 @@ export function useChatScreen() {
   return {
     log,
     online,
+    typingNames,
     // The composer's text box, focused when editing starts.
     input,
     // The composer's text: the message being edited, or the new one.
@@ -34,9 +35,14 @@ export function useChatScreen() {
       return message.authorId === selfId && !message.deleted
     },
 
+    // Only a new message counts as typing, not an edit.
     setText(text: string) {
-      if (editing) setEditing({ ...editing, text })
-      else setDraft(text)
+      if (editing) {
+        setEditing({ ...editing, text })
+        return
+      }
+      setDraft(text)
+      if (text.trim()) announceTyping()
     },
 
     startEditing(message: Message) {

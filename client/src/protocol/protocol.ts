@@ -28,8 +28,11 @@ export type PeerEvent =
   | { type: 'delete'; id: string }
   // Every message the sender knows, so a newcomer sees what came before.
   | { type: 'history'; messages: Message[] }
+  // The sender is writing a message. Repeated every few seconds while they
+  // type, so receivers drop the sender's name once these stop coming.
+  | { type: 'typing' }
 
-// The events that change the chat log, as opposed to `hello`.
+// The events that change the chat, as opposed to `hello`.
 export type ChatEvent = Exclude<PeerEvent, { type: 'hello' }>
 
 export function parsePeerEvent(data: string): PeerEvent | undefined {
@@ -55,6 +58,8 @@ export function parsePeerEvent(data: string): PeerEvent | undefined {
       return Array.isArray(event.messages) && event.messages.every(isMessage)
         ? { type: 'history', messages: event.messages }
         : undefined
+    case 'typing':
+      return { type: 'typing' }
     default:
       return undefined
   }

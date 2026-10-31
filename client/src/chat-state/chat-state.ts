@@ -10,6 +10,8 @@ export type ChatState = {
   participants: Record<string, Participant>
   messages: Record<string, Message>
   notices: Notice[]
+  // Others who are writing a message, in the order they started.
+  typing: string[]
 }
 
 export type ChatAction =
@@ -17,12 +19,20 @@ export type ChatAction =
   | { type: 'left'; participantId: string; at: number }
   // An event from a participant, or from this participant itself.
   | { type: 'received'; from: string; event: ChatEvent }
+  // No `typing` event has come from this participant for a while.
+  | { type: 'stopped-typing'; participantId: string }
 
 export type ChatLogEntry =
   { kind: 'message'; message: Message } | { kind: 'notice'; notice: Notice }
 
 export function createChatState(self: Participant): ChatState {
-  return { selfId: self.id, participants: { [self.id]: self }, messages: {}, notices: [] }
+  return {
+    selfId: self.id,
+    participants: { [self.id]: self },
+    messages: {},
+    notices: [],
+    typing: [],
+  }
 }
 
 export function chatReducer(state: ChatState, action: ChatAction): ChatState {
@@ -49,10 +59,13 @@ export function chatReducer(state: ChatState, action: ChatAction): ChatState {
         ...state,
         participants,
         notices: addNotice(state, `${participant.name} left`, action.at),
+        typing: withoutTyping(state, participant.id),
       }
     }
     case 'received':
       return applyEvent(state, action.from, action.event)
+    case 'stopped-typing':
+      return { ...state, typing: withoutTyping(state, action.participantId) }
   }
 }
 
@@ -63,15 +76,20 @@ function applyEvent(state: ChatState, from: string, event: ChatEvent): ChatState
   switch (event.type) {
     case 'message': {
       if (event.id in state.messages) return state
-      return withMessage(state, {
-        id: event.id,
-        authorId: from,
-        authorName: sender.name,
-        text: event.text,
-        sentAt: event.sentAt,
-        editedAt: null,
-        deleted: false,
-      })
+      // Sending ends the typing, so the name goes away with the message.
+      const typing = withoutTyping(state, from)
+      return withMessage(
+        { ...state, typing },
+        {
+          id: event.id,
+          authorId: from,
+          authorName: sender.name,
+          text: event.text,
+          sentAt: event.sentAt,
+          editedAt: null,
+          deleted: false,
+        },
+      )
     }
     case 'edit': {
       // Only the author may edit, and a deleted message stays deleted.
@@ -91,6 +109,10 @@ function applyEvent(state: ChatState, from: string, event: ChatEvent): ChatState
         messages[incoming.id] = known ? mergeMessage(known, incoming) : incoming
       }
       return { ...state, messages }
+    }
+    case 'typing': {
+      if (from === state.selfId || state.typing.includes(from)) return state
+      return { ...state, typing: [...state.typing, from] }
     }
   }
 }
@@ -120,6 +142,10 @@ export function chatLog(state: ChatState): ChatLogEntry[] {
 
 function withMessage(state: ChatState, message: Message): ChatState {
   return { ...state, messages: { ...state.messages, [message.id]: message } }
+}
+
+function withoutTyping(state: ChatState, participantId: string): string[] {
+  return state.typing.filter((id) => id !== participantId)
 }
 
 function addNotice(state: ChatState, text: string, at: number): Notice[] {

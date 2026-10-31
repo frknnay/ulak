@@ -133,6 +133,28 @@ test('an author deletes a message and the others see it was deleted', async ({ j
   await expect(bob.getByText('Oops, wrong chat')).toHaveCount(0)
 })
 
+test('the others see who is typing until they send or stop', async ({ join }) => {
+  const alice = await join()
+  const bob = await join()
+  await expectParticipants(alice, 2)
+  const input = bob.getByRole('textbox', { name: 'Message' })
+  const typing = alice.getByText(/Guest \d{4} is typing…/)
+
+  await input.fill('Almost')
+  await expect(typing).toBeVisible()
+
+  // Sending clears the line at once, well before the typing timeout.
+  await bob.keyboard.press('Enter')
+  await expect(alice.getByText('Almost')).toBeVisible()
+  await expect(typing).toHaveCount(0, { timeout: 1000 })
+
+  // A draft that Bob abandons clears once his typing events stop.
+  await input.fill('Never mind')
+  await expect(typing).toBeVisible()
+  await input.fill('')
+  await expect(typing).toHaveCount(0, { timeout: 10_000 })
+})
+
 test('the log follows new messages unless the reader scrolls up', async ({ join }) => {
   const alice = await join()
   const bob = await join()
