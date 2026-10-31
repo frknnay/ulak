@@ -34,8 +34,8 @@ pnpm dev
 
 `pnpm dev` starts the signaling server on `ws://localhost:8080` and the
 client on `http://localhost:5173`. Open the client in two or more windows
-to chat. Each tab is its own participant, with a random name such as
-"Guest 4821".
+to chat. Each tab is its own participant and asks for a name first,
+suggesting a random one such as "Guest 4821".
 
 To build the client, run `pnpm build`, then serve the build with
 `pnpm preview`. The signaling server still has to run, for example with
@@ -123,8 +123,10 @@ Events don't name their sender: the receiver knows which peer each DataChannel b
 
 - **Joining.** When a DataChannel opens, each side sends `hello` and then
   `history`, so a newcomer sees the messages that were sent before it
-  joined. Each tab keeps its participant id and name in `sessionStorage`,
-  so a reload keeps the same identity.
+  joined. A tab asks for a name before it connects, so its `hello`
+  carries that name. Each tab keeps its participant id and name in
+  `sessionStorage`, so a reload keeps the same identity and doesn't ask
+  again.
 - **Reconnecting.** If the signaling connection closes, the tab closes
   its peer connections and connects again 2 seconds later, retrying until
   the server is back. Meanwhile the composer says it's offline and is
@@ -157,9 +159,10 @@ Events don't name their sender: the receiver knows which peer each DataChannel b
   target, announces joins and leaves, and ignores malformed messages.
 - **End-to-end tests** (Playwright) open several participants as separate
   browser contexts in Chromium, against their own signaling server and
-  client. They cover presence, sending, history for newcomers, leaving,
-  editing, deleting, showing who is typing, keeping the newest messages in
-  view, and rejoining after a dropped signaling connection.
+  client. They cover presence, choosing a name, sending, history for
+  newcomers, leaving, editing, deleting, showing who is typing, keeping the
+  newest messages in view, and rejoining after a dropped signaling
+  connection.
 
 The transport has no unit tests. Faking WebRTC would mostly test the fake,
 so the end-to-end tests cover it with real connections instead.

@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { loadIdentity } from './identity'
+import { createIdentity, guestName, loadIdentity } from './identity'
 
 function fakeStorage(entries: Record<string, string> = {}) {
   const items = new Map(Object.entries(entries))
@@ -9,31 +9,35 @@ function fakeStorage(entries: Record<string, string> = {}) {
   }
 }
 
-describe('loadIdentity', () => {
-  test('creates a guest identity on the first visit', () => {
-    const identity = loadIdentity(fakeStorage())
+describe('identity', () => {
+  test('has none before the participant chooses a name', () => {
+    expect(loadIdentity(fakeStorage())).toBeUndefined()
+  })
+
+  test('creates an identity with the chosen name', () => {
+    const identity = createIdentity('Furkan', fakeStorage())
     expect(identity.id).not.toBe('')
-    expect(identity.name).toMatch(/^Guest \d{4}$/)
+    expect(identity.name).toBe('Furkan')
   })
 
   test('keeps the same identity across reloads', () => {
     const storage = fakeStorage()
-    expect(loadIdentity(storage)).toEqual(loadIdentity(storage))
-  })
-
-  test('gives each tab its own identity', () => {
-    expect(loadIdentity(fakeStorage()).id).not.toBe(loadIdentity(fakeStorage()).id)
-  })
-
-  test('replaces stored data that is not an identity', () => {
-    const storage = fakeStorage({ 'ulak:participant': '{"id": 42}' })
-    const identity = loadIdentity(storage)
-    expect(identity.name).toMatch(/^Guest \d{4}$/)
+    const identity = createIdentity('Furkan', storage)
     expect(loadIdentity(storage)).toEqual(identity)
   })
 
-  test('replaces stored data that is not JSON', () => {
-    const identity = loadIdentity(fakeStorage({ 'ulak:participant': '{' }))
-    expect(identity.name).toMatch(/^Guest \d{4}$/)
+  test('gives each tab its own identity', () => {
+    expect(createIdentity('A', fakeStorage()).id).not.toBe(createIdentity('A', fakeStorage()).id)
   })
+
+  test.each([
+    ['not an identity', '{"id": 42}'],
+    ['not JSON', '{'],
+  ])('ignores stored data that is %s', (_, data) => {
+    expect(loadIdentity(fakeStorage({ 'ulak:participant': data }))).toBeUndefined()
+  })
+})
+
+test('suggests a guest name', () => {
+  expect(guestName()).toMatch(/^Guest \d{4}$/)
 })

@@ -4,18 +4,26 @@ const storageKey = 'ulak:participant'
 
 // Who this tab is. The id and name live in sessionStorage, so a reload
 // keeps the same identity and the right to edit earlier messages.
+// Undefined until the participant has chosen a name in this tab.
 export function loadIdentity(
-  storage: Pick<Storage, 'getItem' | 'setItem'> = sessionStorage,
-): Participant {
-  const stored = parseParticipant(storage.getItem(storageKey))
-  if (stored) return stored
+  storage: Pick<Storage, 'getItem'> = sessionStorage,
+): Participant | undefined {
+  return parseParticipant(storage.getItem(storageKey))
+}
 
-  const participant = {
-    id: crypto.randomUUID(),
-    name: `Guest ${Math.floor(1000 + Math.random() * 9000)}`,
-  }
+// Gives this tab a new identity with the name that the participant chose.
+export function createIdentity(
+  name: string,
+  storage: Pick<Storage, 'setItem'> = sessionStorage,
+): Participant {
+  const participant = { id: crypto.randomUUID(), name }
   storage.setItem(storageKey, JSON.stringify(participant))
   return participant
+}
+
+// A name to suggest, such as "Guest 4821".
+export function guestName(): string {
+  return `Guest ${Math.floor(1000 + Math.random() * 9000)}`
 }
 
 function parseParticipant(data: string | null): Participant | undefined {
@@ -33,7 +41,7 @@ function parseParticipant(data: string | null): Participant | undefined {
       return { id: value.id, name: value.name }
     }
   } catch {
-    // Fall through and create a new identity.
+    // Fall through, so the participant chooses a name again.
   }
   return undefined
 }

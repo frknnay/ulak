@@ -6,19 +6,27 @@ import {
   type WebSocketRoute,
 } from '@playwright/test'
 
+type JoinOptions = {
+  // The name to join under, or the suggested guest name if not given.
+  name?: string
+  // Runs on the page before the app loads.
+  setup?: (page: Page) => Promise<void>
+}
+
 // `join()` opens the app as a new participant, in its own browser context
-// like a separate window. `setup` runs on the page before the app loads.
-// Every participant leaves when the test ends, so the next test starts
-// with an empty session.
-const test = base.extend<{ join: (setup?: (page: Page) => Promise<void>) => Promise<Page> }>({
+// like a separate window, and joins the chat. Every participant leaves
+// when the test ends, so the next test starts with an empty session.
+const test = base.extend<{ join: (options?: JoinOptions) => Promise<Page> }>({
   join: async ({ browser }, provide) => {
     const contexts: BrowserContext[] = []
-    await provide(async (setup) => {
+    await provide(async ({ name, setup } = {}) => {
       const context = await browser.newContext()
       contexts.push(context)
       const page = await context.newPage()
       await setup?.(page)
       await page.goto('/')
+      if (name) await page.getByRole('textbox', { name: 'Your name' }).fill(name)
+      await page.getByRole('button', { name: 'Join chat' }).click()
       return page
     })
     for (const context of contexts) await context.close()
@@ -60,6 +68,19 @@ test('participants see each other', async ({ join }) => {
   const names = await participantNames(alice)
   expect(names).toHaveLength(2)
   expect(await participantNames(bob)).toEqual(names)
+})
+
+test('a participant joins under the name they choose, and keeps it', async ({ join }) => {
+  const alice = await join({ name: 'Alice Press' })
+  const bob = await join()
+
+  await expect(bob.getByText('Alice Press joined')).toBeVisible()
+  expect(await participantNames(bob)).toContain('Alice Press')
+
+  // A reload keeps the name and joins without asking again.
+  await alice.reload()
+  await expectParticipants(alice, 2)
+  expect(await participantNames(alice)).toContain('Alice Press')
 })
 
 test('a message reaches every other participant', async ({ join }) => {
@@ -183,11 +204,12 @@ test('a participant whose signaling connection drops rejoins', async ({ join }) 
   // Bob's signaling connection runs through the test, so the test can drop
   // it. The config starts the signaling server on port 8090.
   let signaling: { page: WebSocketRoute; server: WebSocketRoute } | undefined
-  const bob = await join((page) =>
-    page.routeWebSocket(/:8090\//, (route) => {
-      signaling = { page: route, server: route.connectToServer() }
-    }),
-  )
+  const bob = await join({
+    setup: (page) =>
+      page.routeWebSocket(/:8090\//, (route) => {
+        signaling = { page: route, server: route.connectToServer() }
+      }),
+  })
   await expectParticipants(alice, 2)
 
   await signaling?.server.close()

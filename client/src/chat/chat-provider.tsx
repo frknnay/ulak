@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useReducer, useRef, useState, type ReactNode } from 'react'
 import { chatLog, chatReducer, createChatState } from '../chat-state/chat-state'
-import type { ChatEvent } from '../protocol/protocol'
+import type { ChatEvent, Participant } from '../protocol/protocol'
 import { connectTransport, type Transport } from '../transport/transport'
 import { ChatContext, type ChatContextValue } from './chat-context'
 import { createConnections } from './connections'
-import { loadIdentity } from './identity'
 
 // The signaling server runs next to the client on port 8080. Using the
 // page's host lets other devices on the LAN join. The end-to-end tests
@@ -19,9 +18,9 @@ const typingTimeout = 4000
 
 // Holds the one chat state and transport for the whole app, and connects
 // the two: events from peers go to the reducer, and messages that this
-// participant sends go to the reducer and to every peer.
-export function ChatProvider({ children }: { children: ReactNode }) {
-  const [self] = useState(() => loadIdentity())
+// participant sends go to the reducer and to every peer. It joins the
+// session as `self` when it mounts.
+export function ChatProvider({ self, children }: { self: Participant; children: ReactNode }) {
   const [state, dispatch] = useReducer(chatReducer, self, createChatState)
   const transport = useRef<Transport | null>(null)
   // Whether the signaling connection is open. Assumed at first, so the
