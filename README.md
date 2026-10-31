@@ -3,9 +3,8 @@
 _Ulak_ is Turkish for "messenger", the courier who carried news from town
 to town.
 
-A real-time chat for several participants. Peers connect to each other
-directly over WebRTC DataChannels in a full mesh. A small WebSocket
-signaling server only introduces them.
+A real-time chat for several participants, who talk to each other
+directly over WebRTC.
 
 > **How this was built.** The code is AI-generated, written with an AI
 > coding agent, but I made the design decisions and steered it. These are
@@ -40,6 +39,12 @@ suggesting a random one such as "Guest 4821".
 To build the client, run `pnpm build`, then serve the build with
 `pnpm preview`. The signaling server still has to run, for example with
 `pnpm --filter @ulak/server start`.
+
+The client looks for the signaling server on port 8080 of the host it was
+loaded from. To join from another device on your network, start the
+client with `pnpm --filter @ulak/client dev --host` and open it at your
+machine's address. Set `PORT` to move the signaling server, and
+`VITE_SIGNALING_URL` to point the client somewhere else.
 
 Other commands:
 
@@ -82,6 +87,30 @@ imports them as
 [`@ulak/server/signaling`](server/src/signaling/signaling.ts), so both
 sides parse the same types.
 
+## How a session works
+
+1. **Pick a name.** The tab asks for a name and keeps it, with a random
+   id, in `sessionStorage`. A reload keeps both and skips this step, and
+   the id keeps the right to edit earlier messages.
+2. **Meet the others.** The tab connects to the signaling server. The
+   server answers `welcome` with the peers already there, and sends
+   `peer-joined` to them.
+3. **Connect directly.** The newcomer sends an offer to each peer
+   through the server, and each answers, so two peers never send offers
+   to each other at the same time. ICE candidates follow the same way. Then every pair shares a DataChannel, and the server is out of
+   the chat.
+4. **Catch up.** On each new channel, both sides send `hello`, then
+   `history`. Everyone merges the history, so a newcomer sees what came
+   before.
+5. **Chat.** `message`, `edit`, `delete` and `typing` go to every
+   channel. Each peer applies them to its own copy of the chat with the
+   reducer.
+6. **Leave or drop.** A closed tab closes its channels, and the others
+   show "Alice left". If the signaling connection drops, the tab closes
+   its peers and goes offline, which disables the composer. It retries
+   every 2 seconds and rejoins from step 2, and `history` fills in what
+   it missed.
+
 ## Message protocol
 
 Every message is a JSON object with a `type` field. Receivers check each
@@ -102,15 +131,14 @@ The server never sees chat messages.
 | server to client | `{ type: 'signal', from, signal }` | A handshake step from peer `from`                  |
 
 A `signal` is an `offer` or `answer` with its `sdp`, or an `ice`
-candidate. The newcomer sends an offer to every peer that is already in
-the session, and each of them answers, so two peers never send offers to
-each other at the same time.
+candidate.
 
 ### Chat (peer to peer)
 
 Defined in
 [`client/src/protocol/protocol.ts`](client/src/protocol/protocol.ts).
-Events don't name their sender: the receiver knows which peer each DataChannel belongs to.
+Events don't name their sender: the receiver knows which peer each
+DataChannel belongs to.
 
 | Event                                          | Meaning                             |
 | ---------------------------------------------- | ----------------------------------- |
@@ -121,23 +149,27 @@ Events don't name their sender: the receiver knows which peer each DataChannel b
 | `{ type: 'history', messages }`                | Every message the sender knows      |
 | `{ type: 'typing' }`                           | The sender is writing a message     |
 
-- **Joining.** When a DataChannel opens, each side sends `hello` and then
-  `history`, so a newcomer sees the messages that were sent before it
-  joined. A tab asks for a name before it connects, so its `hello`
-  carries that name. Each tab keeps its participant id and name in
-  `sessionStorage`, so a reload keeps the same identity and doesn't ask
-  again.
-- **Reconnecting.** If the signaling connection closes, the tab closes
-  its peer connections and connects again 2 seconds later, retrying until
-  the server is back. Meanwhile the composer says it's offline and is
-  disabled. The tab then rejoins like a newcomer, so the `history`
-  exchange catches it up on messages that were sent while it was away.
+Every peer stores a message in this shape, and `history` sends a list of
+them:
+
+```ts
+type Message = {
+  id: string
+  authorId: string
+  authorName: string
+  text: string
+  sentAt: number
+  editedAt: number | null
+  deleted: boolean
+}
+```
+
 - **Ids and times.** The sender creates message ids and stamps times in
   milliseconds from its own clock. Everyone orders the log by `sentAt`.
-- **Edits.** An edit replaces the text and sets `editedAt`, so the UI can
+- **Edits.** An edit replaces `text` and sets `editedAt`, so the UI can
   mark the message as edited.
-- **Deletes.** A delete keeps the message in the log with `deleted: true`
-  and its text cleared, so others see that it was deleted.
+- **Deletes.** A delete keeps the message in the log, sets `deleted` and
+  clears `text`, so others see that it was deleted.
 - **Authorship.** A receiver applies an edit or delete only if it came
   from the message's author.
 - **Merging history.** Peers merge history by message id. A deleted
@@ -152,8 +184,8 @@ Events don't name their sender: the receiver knows which peer each DataChannel b
 
 - **Unit tests** (Vitest) cover the core logic without a browser: the
   event parser, the chat reducer (messages, edits, deletes, authorship,
-  merging history, typing), linking connections to participants, and the
-  stored identity.
+  merging history, typing), matching each DataChannel to the participant
+  who sent `hello` on it, and the stored identity.
 - **Server tests** (`node:test`) start a real signaling server on a free
   port and check that it introduces peers, relays signals only to their
   target, announces joins and leaves, and ignores malformed messages.
