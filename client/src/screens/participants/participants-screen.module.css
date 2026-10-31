@@ -8,3 +8,7 @@
   padding: var(--space-2) 0;
   line-height: 1.75;
 }
+
+.you {
+  color: var(--color-text-muted);
+}

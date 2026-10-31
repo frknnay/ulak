@@ -58,16 +58,16 @@ async function act(page: Page, text: string, action: 'Edit' | 'Delete') {
 }
 
 test('participants see each other', async ({ join }) => {
-  const alice = await join()
-  const bob = await join()
+  const alice = await join({ name: 'Alice' })
+  const bob = await join({ name: 'Bob' })
 
   await expectParticipants(alice, 2)
   await expectParticipants(bob, 2)
-  await expect(alice.getByText(/Guest \d{4} joined/)).toBeVisible()
+  await expect(alice.getByText('Bob joined')).toBeVisible()
 
-  const names = await participantNames(alice)
-  expect(names).toHaveLength(2)
-  expect(await participantNames(bob)).toEqual(names)
+  // Each sees the same people, with themselves marked as You.
+  expect(await participantNames(alice)).toEqual(['Alice (You)', 'Bob'])
+  expect(await participantNames(bob)).toEqual(['Alice', 'Bob (You)'])
 })
 
 test('a participant joins under the name they choose, and keeps it', async ({ join }) => {
@@ -80,7 +80,7 @@ test('a participant joins under the name they choose, and keeps it', async ({ jo
   // A reload keeps the name and joins without asking again.
   await alice.reload()
   await expectParticipants(alice, 2)
-  expect(await participantNames(alice)).toContain('Alice Press')
+  expect(await participantNames(alice)).toContain('Alice Press (You)')
 })
 
 test('a message reaches every other participant', async ({ join }) => {
