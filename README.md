@@ -6,6 +6,8 @@ to town.
 A real-time chat for several participants, who talk to each other
 directly over WebRTC.
 
+<img src="docs/screenshot.png" alt="The chat with three participants: join notices, an edited and a deleted message, and Carol typing" width="400">
+
 > **How this was built.** The code is AI-generated, written with an AI
 > coding agent, but I made the design decisions and steered it. These are
 > the main ones and why:
