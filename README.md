@@ -210,6 +210,9 @@ so the end-to-end tests cover it with real connections instead.
 - **No persistence.** The history is gone once the last tab closes.
 - **Peers trust each other.** A peer could fake its id or old messages.
   Signing messages would prevent that.
+- **Same names.** Two people can pick the same name. The app tells them
+  apart by id, but the screen doesn't, so anyone can pose as someone
+  else. Coloring each name by its id would help readers see who is who.
 - **Long chats.** Every new peer gets the whole log in one message, and
   the list renders every message. I'd sync only what's missing and
   virtualize the list.
