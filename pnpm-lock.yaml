@@ -41,9 +41,15 @@ importers:
 
   client:
     dependencies:
+      '@emoji-mart/data':
+        specifier: ^1.2.1
+        version: 1.2.1
       '@ulak/server':
         specifier: workspace:*
         version: link:../server
+      emoji-mart:
+        specifier: ^5.6.0
+        version: 5.6.0
       lucide-react:
         specifier: ^1.63.0
         version: 1.63.0(@types/react@19.3.0)(react@19.3.1)
@@ -224,6 +230,9 @@ packages:
   '@csstools/css-tokenizer@4.0.2':
     resolution: {integrity: sha512-OoKoR0f76dCY666JlcbhmVTs2drYj1GUXZTYTcbUgJjh9Nv41aFfZ21bPQTERm5+L5cBDo466NltB2lplS5GBw==}
     engines: {node: '>=20.19.0'}
+
+  '@emoji-mart/data@1.2.1':
+    resolution: {integrity: sha512-no2pQMWiBy6gpBEiqGeU77/bFejDqUTRY7KX+0+iur13op3bqUsXdnwoZs6Xb1zbv0gAj5VvS1PWoUUckSr5Dw==}
 
   '@eslint-community/eslint-utils@4.10.1':
     resolution: {integrity: sha512-cuadcxVFE8sDK6iWJbs8Sn0av2Nrh2QSGQhVlBW9AaAHqHwjWsZHT8LJ4hFGPh7ASBV2deFdM7H/DPjulmh8rg==}
@@ -670,6 +679,9 @@ packages:
 
   electron-to-chromium@1.5.467:
     resolution: {integrity: sha512-Nw9X371rtZmYcBSnEijnCDONILjs93biCZO34juC7MBOmK8E+GFnyD4T/WvyrlJkppul7oxg6TwvtKst9SODTw==}
+
+  emoji-mart@5.6.0:
+    resolution: {integrity: sha512-eJp3QRe79pjwa+duv+n7+5YsNhRcMl812EcFVwrnRvYKoNPoQb5qxU8DG6Bgwji0akHdp6D4Ln6tYLG58MFSow==}
 
   entities@8.1.0:
     resolution: {integrity: sha512-kxL7msIffSuh9aaFAMD7rxAIuTRMAHMeBtgHW2yUdWw732ZNh4MehkF2gdjvtdmikkaIP9bFDDJOPlsvm7avrA==}
@@ -1511,6 +1523,8 @@ snapshots:
 
   '@csstools/css-tokenizer@4.0.2': {}
 
+  '@emoji-mart/data@1.2.1': {}
+
   '@eslint-community/eslint-utils@4.10.1(eslint@10.13.0)':
     dependencies:
       eslint: 10.13.0
@@ -1894,6 +1908,8 @@ snapshots:
   dom-accessibility-api@0.5.16: {}
 
   electron-to-chromium@1.5.467: {}
+
+  emoji-mart@5.6.0: {}
 
   entities@8.1.0: {}
 

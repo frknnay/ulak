@@ -1,0 +1,26 @@
+.trigger {
+  color: var(--color-text-muted);
+}
+
+/* Reset the popover's default centering, then stand above the button, or
+   below it when there is no room above. The border and shadow match the
+   Menu's. */
+.picker {
+  inset: auto;
+  bottom: anchor(top);
+  left: anchor(left);
+  position-try-fallbacks: flip-block;
+  margin: var(--space-1) 0;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: var(--color-surface);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 15%);
+
+  /* emoji-mart's own corners and shadow, which the border replaces. */
+  & em-emoji-picker {
+    --border-radius: 0;
+    --shadow: none;
+  }
+}

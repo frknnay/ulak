@@ -1,11 +1,12 @@
-import type { FormEvent, KeyboardEvent, Ref } from 'react'
+import type { FormEvent, KeyboardEvent, RefObject } from 'react'
 import { SendHorizontal, X } from 'lucide-react'
+import { EmojiPicker } from '../../../components/emoji-picker/emoji-picker'
 import { IconButton } from '../../../components/icon-button/icon-button'
 import { ComposerStrip } from './composer-strip/composer-strip'
 import styles from './composer.module.css'
 
 type ComposerProps = {
-  inputRef: Ref<HTMLTextAreaElement>
+  inputRef: RefObject<HTMLTextAreaElement | null>
   value: string
   // The original text of the message being edited, or null for a new one.
   editing: string | null
@@ -34,6 +35,16 @@ export function Composer({
   function handleSubmit(event: FormEvent) {
     event.preventDefault()
     submit()
+  }
+
+  // Puts the emoji in place of the selected text, or at the cursor, and
+  // leaves the cursor after it so typing carries on from there.
+  function insertEmoji(emoji: string) {
+    const input = inputRef.current
+    if (!input) return
+    input.setRangeText(emoji, input.selectionStart, input.selectionEnd, 'end')
+    input.focus()
+    onChange(input.value)
   }
 
   // Enter sends, Shift+Enter starts a new line, and Escape stops editing.
@@ -77,14 +88,17 @@ export function Composer({
           onChange={(event) => onChange(event.target.value)}
           onKeyDown={handleKeyDown}
         />
-        <IconButton
-          type="submit"
-          label={editing !== null ? 'Save' : 'Send'}
-          className={styles.send}
-          disabled={!text || offline}
-        >
-          <SendHorizontal />
-        </IconButton>
+        <div className={styles.toolbar}>
+          <EmojiPicker disabled={offline} onSelect={insertEmoji} />
+          <IconButton
+            type="submit"
+            label={editing !== null ? 'Save' : 'Send'}
+            className={styles.send}
+            disabled={!text || offline}
+          >
+            <SendHorizontal />
+          </IconButton>
+        </div>
       </div>
     </form>
   )

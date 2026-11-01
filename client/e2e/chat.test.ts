@@ -154,6 +154,24 @@ test('an author deletes a message and the others see it was deleted', async ({ j
   await expect(bob.getByText('Oops, wrong chat')).toHaveCount(0)
 })
 
+test('a picked emoji goes into the message at the cursor', async ({ join }) => {
+  const alice = await join()
+  const bob = await join()
+  await expectParticipants(alice, 2)
+  const input = alice.getByRole('textbox', { name: 'Message' })
+  await input.fill('Bye ')
+
+  await alice.getByRole('button', { name: 'Emoji' }).click()
+  await alice.getByRole('searchbox').fill('wave')
+  await alice.getByRole('button', { name: '👋' }).first().click()
+
+  // The picker closes and typing carries on after the emoji.
+  await expect(alice.getByRole('searchbox')).toHaveCount(0)
+  await alice.keyboard.type(' all')
+  await alice.keyboard.press('Enter')
+  await expect(bob.getByText('Bye 👋 all')).toBeVisible()
+})
+
 test('the others see who is typing until they send or stop', async ({ join }) => {
   const alice = await join()
   const bob = await join()

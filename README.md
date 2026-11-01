@@ -216,7 +216,7 @@ so the end-to-end tests cover it with real connections instead.
 - **Long chats.** Every new peer gets the whole log in one message, and
   the list renders every message. I'd sync only what's missing and
   virtualize the list.
-- **Mockup.** The ✕, + and emoji buttons are left out.
+- **Mockup.** The ✕ and + buttons are left out.
 
 ## Time spent
 

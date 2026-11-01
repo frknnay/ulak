@@ -49,8 +49,12 @@
   }
 }
 
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 var(--space-1) var(--space-1);
+}
+
 .send {
-  align-self: flex-end;
-  margin: 0 var(--space-1) var(--space-1) 0;
   color: var(--color-text-muted);
 }
