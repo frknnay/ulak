@@ -200,3 +200,21 @@ type Message = {
 
 The transport has no unit tests. Faking WebRTC would mostly test the fake,
 so the end-to-end tests cover it with real connections instead.
+
+## Trade-offs and known issues
+
+- **Same network only.** There are no STUN or TURN servers yet.
+- **Small groups.** A full mesh needs a connection for every pair.
+- **Clock order.** Messages are ordered by the sender's clock, so a wrong
+  clock misplaces them. A logical clock would fix that.
+- **No persistence.** The history is gone once the last tab closes.
+- **Peers trust each other.** A peer could fake its id or old messages.
+  Signing messages would prevent that.
+- **Long chats.** Every new peer gets the whole log in one message, and
+  the list renders every message. I'd sync only what's missing and
+  virtualize the list.
+- **Mockup.** The ✕, + and emoji buttons are left out.
+
+## Time spent
+
+About 5 hours, spread over three days.
