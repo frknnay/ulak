@@ -53,6 +53,10 @@ A pnpm workspace. ESLint, Prettier and TypeScript live at the root.
   - `src/chat/`: `ChatProvider` holds the one chat state and transport.
     Screens read the chat and send messages with `useChat()`, and
     components stay presentational.
+  - `src/theme/`: the light or dark theme. Colors in `index.css` use
+    `light-dark()`, so the page follows the OS until the participant
+    picks a theme, which `theme.ts` saves and sets as `data-theme` on
+    `<html>`.
   - Tests sit next to the file they test, such as `chat-state.test.ts`,
     and run with Vitest. Component tests, such as `message-log.test.tsx`,
     render with Testing Library in jsdom and cover how one window shows

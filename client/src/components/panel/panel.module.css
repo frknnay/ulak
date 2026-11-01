@@ -13,7 +13,6 @@
 .header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: var(--space-2);
   min-height: 58px;
   padding: var(--space-2) var(--space-3) var(--space-2) var(--space-5);
@@ -21,6 +20,7 @@
 }
 
 .title {
+  flex: 1;
   font-size: 17px;
   font-weight: 600;
 }

@@ -1,5 +1,5 @@
-/* Each color has a light and a dark value, and the page uses the one
-   that matches the OS. */
+/* Each color has a light and a dark value. The page follows the OS until
+   the participant picks a theme, which sets data-theme on <html>. */
 :root {
   color-scheme: light dark;
 
@@ -29,6 +29,14 @@
   background: var(--color-backdrop);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
 }
 
 *,

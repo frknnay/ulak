@@ -1,5 +1,6 @@
 import { useId, useRef, type ToggleEvent } from 'react'
 import { Smile } from 'lucide-react'
+import { currentTheme } from '../../theme/theme'
 import { IconButton } from '../icon-button/icon-button'
 import styles from './emoji-picker.module.css'
 
@@ -35,7 +36,8 @@ export function EmojiPicker({ disabled, onSelect }: EmojiPickerProps) {
     if (!element.matches(':popover-open')) return
     const picker = new Picker({
       data,
-      theme: 'auto',
+      // Read on each open, since the picker is built anew every time.
+      theme: currentTheme(),
       autoFocus: true,
       previewPosition: 'none',
       // Narrow enough to fit inside the chat panel.

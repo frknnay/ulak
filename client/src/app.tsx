@@ -4,9 +4,12 @@ import { ChatProvider } from './chat/chat-provider'
 import { createIdentity, loadIdentity } from './chat/identity'
 import { Panel } from './components/panel/panel'
 import { Tabs } from './components/tabs/tabs'
+import { ThemeToggle } from './components/theme-toggle/theme-toggle'
 import { ChatScreen } from './screens/chat/chat-screen'
 import { JoinScreen } from './screens/join/join-screen'
 import { ParticipantsScreen } from './screens/participants/participants-screen'
+import { pickTheme } from './theme/theme'
+import { useTheme } from './theme/use-theme'
 import styles from './app.module.css'
 
 type TabId = 'participants' | 'chat'
@@ -15,10 +18,19 @@ type TabId = 'participants' | 'chat'
 // name, so it joins right away.
 export function App() {
   const [self, setSelf] = useState(() => loadIdentity())
+  const theme = useTheme()
 
   return (
     <main className={styles.app}>
-      <Panel title="Status meeting standup">
+      <Panel
+        title="Status meeting standup"
+        actions={
+          <ThemeToggle
+            theme={theme}
+            onToggle={() => pickTheme(theme === 'dark' ? 'light' : 'dark')}
+          />
+        }
+      >
         {self ? (
           <ChatProvider self={self}>
             <Meeting />
