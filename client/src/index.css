@@ -1,12 +1,18 @@
+/* Each color has a light and a dark value, and the page uses the one
+   that matches the OS. */
 :root {
-  --color-text: #333;
-  --color-text-muted: #666;
-  --color-accent: #0a69e6;
-  --color-surface: #fff;
-  --color-backdrop: #d9d9d9;
-  --color-control: #e3e3e3;
-  --color-border: #ccc;
-  --color-divider: #e0e0e0;
+  color-scheme: light dark;
+
+  --color-text: light-dark(#333, #e3e3e3);
+  --color-text-muted: light-dark(#666, #a3a3a3);
+  --color-accent: light-dark(#0a69e6, #5c9eff);
+  --color-on-accent: light-dark(#fff, #141414);
+  --color-surface: light-dark(#fff, #242424);
+  --color-backdrop: light-dark(#d9d9d9, #141414);
+  --color-control: light-dark(#e3e3e3, #363636);
+  --color-border: light-dark(#ccc, #4d4d4d);
+  --color-divider: light-dark(#e0e0e0, #383838);
+  --shadow-popover: 0 2px 8px light-dark(rgb(0 0 0 / 15%), rgb(0 0 0 / 50%));
 
   --space-1: 4px;
   --space-2: 8px;

@@ -35,7 +35,7 @@ export function EmojiPicker({ disabled, onSelect }: EmojiPickerProps) {
     if (!element.matches(':popover-open')) return
     const picker = new Picker({
       data,
-      theme: 'light',
+      theme: 'auto',
       autoFocus: true,
       previewPosition: 'none',
       // Narrow enough to fit inside the chat panel.
